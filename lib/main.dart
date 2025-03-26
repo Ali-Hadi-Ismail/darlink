@@ -1,5 +1,5 @@
+import 'package:darlink/modules/intro_screens/budget_screen.dart';
 import 'package:darlink/modules/profile_screen.dart';
-import 'package:darlink/modules/setting_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -9,7 +9,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // ds This widget is the roozt of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: ProfileScreen(),
+      home: BudgetScreen(),
     );
   }
 }
