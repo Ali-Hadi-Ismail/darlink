@@ -1,6 +1,7 @@
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/intro_screens/budget_screen.dart';
 import 'package:darlink/modules/profile_screen.dart';
+import 'package:darlink/modules/register_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: HomeLayout(),
+      home: RegisterScreen(),
     );
   }
 }
