@@ -1,9 +1,4 @@
 import 'package:darlink/layout/home_layout.dart';
-import 'package:darlink/modules/filter_bottom.dart';
-import 'package:darlink/modules/home_screen.dart';
-import 'package:darlink/modules/intro_screens/budget_screen.dart';
-import 'package:darlink/modules/profile_screen.dart';
-import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
