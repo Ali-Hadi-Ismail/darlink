@@ -1,29 +1,38 @@
-import 'package:darlink/modules/register_screen.dart';
+import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
 
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  String? _usernameError;
   String? _emailError;
   String? _passwordError;
 
+  bool _hasStartedTypingUsername = false;
   bool _hasStartedTypingEmail = false;
   bool _hasStartedTypingPassword = false;
 
-  void _validateAndLogin() {
+  void _validateAndRegister() {
     setState(() {
+      _usernameError = _usernameController.text.isEmpty
+          ? 'Username cannot be empty'
+          : (_usernameController.text.length < 6
+              ? 'Username must be at least 6 characters'
+              : null);
+
       _emailError = _emailController.text.isEmpty
           ? 'Email cannot be empty'
           : (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text)
@@ -34,8 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordController.text.isEmpty ? 'Password cannot be empty' : null;
     });
 
-    if (_emailError == null && _passwordError == null) {
-      print("Login Successful");
+    if (_usernameError == null &&
+        _emailError == null &&
+        _passwordError == null) {
+      print("Registration Successful");
     }
   }
 
@@ -62,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
-                'Login',
+                'Register',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -72,6 +83,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
+
+              // Username Field
+              _buildTextField(
+                controller: _usernameController,
+                label: 'Username',
+                icon: FontAwesomeIcons.user,
+                iconColor: Colors.orange,
+                hintText: 'Enter your username',
+                errorText: _hasStartedTypingUsername ? _usernameError : null,
+                onChanged: (value) {
+                  setState(() {
+                    _hasStartedTypingUsername = true;
+                    _usernameError = value.isEmpty
+                        ? 'Username cannot be empty'
+                        : (value.length < 6
+                            ? 'Username must be at least 6 characters'
+                            : null);
+                  });
+                },
+              ),
+              const SizedBox(height: 15),
 
               // Email Field
               _buildTextField(
@@ -126,9 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Login Button
+              // Register Button
               ElevatedButton(
-                onPressed: _validateAndLogin,
+                onPressed: _validateAndRegister,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purpleAccent,
                   shape: RoundedRectangleBorder(
@@ -138,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text(
-                  'Login',
+                  'Register',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -151,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Social Media Buttons
               const Text(
-                'Or login with',
+                'Or register with',
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,
@@ -186,19 +218,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Register Text
+              // Login Text
               GestureDetector(
                 onTap: () {
-                  // Navigate to Register Page
+                  // Navigate to Login Page
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterScreen()),
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
                 child: RichText(
                   text: const TextSpan(
-                    text: "Don't have an account? ",
+                    text: "Already have an account? ",
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 14,
@@ -206,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     children: [
                       TextSpan(
-                        text: "Register",
+                        text: "Login",
                         style: TextStyle(
                           color: Colors.purpleAccent,
                           fontWeight: FontWeight.bold,

@@ -87,7 +87,10 @@ class PropertyCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         address,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[400],
+                            overflow: TextOverflow.fade),
                       ),
                     ],
                   ),
