@@ -1,5 +1,6 @@
 import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/modules/home_screen.dart';
+import 'package:darlink/modules/message_screen.dart';
 import 'package:darlink/modules/profile_screen.dart';
 import 'package:darlink/modules/setting_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,16 +17,13 @@ class _HomeLayoutState extends State<HomeLayout>
   final List<Widget> _pages = [
     const HomeScreen(),
     Center(
-        child: Text(
-      'Search Page',
-      style: TextStyle(color: Colors.white),
-    )),
+      child: Text(
+        'Search Page',
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
     const ProfileScreen(),
-    Center(
-        child: Text(
-      'Messages Page',
-      style: TextStyle(color: Colors.white),
-    )),
+    const MessageScreen(),
     const SettingScreen(),
   ];
 

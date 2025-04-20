@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});

@@ -17,6 +17,8 @@ dependencies:
   flutter_blob: ^0.0.1
   flutter_bloc: ^9.1.0
   font_awesome_flutter: ^10.8.0
+  intl: ^0.20.2
+  agora_rtc_engine: ^6.5.1
 
 dev_dependencies:
   flutter_test:
