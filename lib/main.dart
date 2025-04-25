@@ -1,12 +1,13 @@
 import 'package:darlink/layout/home_layout.dart';
+import 'package:darlink/modules/admin/admin_dashboard.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const DarLinkApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class DarLinkApp extends StatelessWidget {
+  const DarLinkApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: HomeLayout(),
+      home: AdminDashboard(),
     );
   }
 }

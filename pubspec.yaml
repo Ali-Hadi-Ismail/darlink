@@ -19,7 +19,9 @@ dependencies:
   font_awesome_flutter: ^10.8.0
   intl: ^0.20.2
   agora_rtc_engine: ^6.5.1
-  lottie: ^3.3.1
+  google_maps_flutter: ^2.12.1
+  panorama_viewer: ^2.0.4
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

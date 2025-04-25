@@ -1,4 +1,4 @@
-class PropertyData {
+class Property {
   final String title;
   final double price;
   final String address;
@@ -15,7 +15,7 @@ class PropertyData {
   final List<String> interiorDetails;
   final List<String> constructionDetails;
 
-  PropertyData({
+  Property({
     required this.title,
     required this.price,
     required this.address,

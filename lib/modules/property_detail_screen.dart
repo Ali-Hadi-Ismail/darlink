@@ -1,8 +1,11 @@
-import 'package:darlink/models/propertyData.dart';
+import 'package:darlink/models/property.dart';
+import 'package:darlink/modules/map_page.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:darlink/modules/Virtual_tour.dart';
 
 class PropertyDetailsScreen extends StatefulWidget {
-  final PropertyData property;
+  final Property property;
 
   const PropertyDetailsScreen({
     Key? key,
@@ -105,99 +108,112 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   }
 
   Widget _buildPropertyCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Color(0xFF2D2D4A),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Property Image
-          ClipRRect(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.asset(
-                widget.property.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey.shade800,
-                  child:
-                      Center(child: Icon(Icons.image_not_supported, size: 50)),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const ExampleScreen1(
+                    title: '123',
+                  )),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Color(0xFF2D2D4A),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.asset(
+                  widget.property.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey.shade800,
+                    child: Center(
+                      child: Icon(Icons.image_not_supported, size: 50),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.property.title,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.property.title,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${widget.property.price.toInt()}',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Color(0xFF9E78FF),
                         ),
                       ),
-                    ),
-                    Text(
-                      '\$${widget.property.price.toInt()}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF9E78FF),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Colors.white70),
+                      SizedBox(width: 4),
+                      Text(
+                        widget.property.address,
+                        style: TextStyle(color: Colors.white70),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.white70),
-                    SizedBox(width: 4),
-                    Text(
-                      widget.property.address,
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    Spacer(),
-                    Text(
-                      '(${widget.property.area}sqft)',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _buildPropertyFeature(Icons.bed,
-                        '${widget.property.bedrooms} Bed', Colors.red.shade300),
-                    SizedBox(width: 24),
-                    _buildPropertyFeature(
-                        Icons.bathtub,
-                        '${widget.property.bathrooms} Bath',
-                        Colors.red.shade300),
-                    SizedBox(width: 24),
-                    _buildPropertyFeature(
-                        Icons.kitchen,
-                        '${widget.property.kitchens} Kitchen',
-                        Colors.red.shade300),
-                  ],
-                ),
-              ],
+                      Spacer(),
+                      Text(
+                        '(${widget.property.area} sqft)',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _buildPropertyFeature(
+                          Icons.bed,
+                          '${widget.property.bedrooms} Bed',
+                          Colors.red.shade300),
+                      SizedBox(width: 24),
+                      _buildPropertyFeature(
+                          Icons.bathtub,
+                          '${widget.property.bathrooms} Bath',
+                          Colors.red.shade300),
+                      SizedBox(width: 24),
+                      _buildPropertyFeature(
+                          Icons.kitchen,
+                          '${widget.property.kitchens} Kitchen',
+                          Colors.red.shade300),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -382,33 +398,46 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   Widget _buildLocationSection() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: Text(
-              'Location Map & Details',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const map_page()),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Text(
+                'Location Map & Details',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              height: 180,
-              width: double.infinity,
-              color: Color(0xFF272743),
-              child: Center(
-                child: Icon(Icons.map, size: 50, color: Colors.grey),
+            SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                color: Color(0xFF272743),
+                child: Center(
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(37.4223, -122.0848),
+                      zoom: 14, // optional: set a zoom level
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:darlink/constants/colors/app_color.dart';
-import 'package:darlink/models/propertyData.dart';
+import 'package:darlink/models/property.dart';
 import 'package:darlink/modules/navigation/profile_screen.dart';
 
 import 'package:darlink/modules/property_detail_screen.dart';
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PropertyDetailsScreen(
-                              property: PropertyData(
+                              property: Property(
                             title: "White Run",
                             price: 150000,
                             address: "Skyrim",
