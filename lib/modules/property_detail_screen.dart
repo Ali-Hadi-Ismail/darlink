@@ -442,15 +442,3 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 }
-
-// Example of how to navigate to this screen from your home screen:
-/*
-Navigator.push(
-  context, 
-  MaterialPageRoute(
-    builder: (context) => PropertyDetailsScreen(
-      property: myPropertyData,
-    ),
-  ),
-);
-*/

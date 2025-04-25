@@ -1,5 +1,5 @@
 import 'package:darlink/constants/colors/app_color.dart';
-import 'package:darlink/modules/chat_screen.dart';
+import 'package:darlink/modules/navigation/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 class MessageScreen extends StatelessWidget {

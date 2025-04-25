@@ -1,8 +1,9 @@
 import 'package:darlink/constants/colors/app_color.dart';
-import 'package:darlink/modules/home_screen.dart';
-import 'package:darlink/modules/message_screen.dart';
-import 'package:darlink/modules/profile_screen.dart';
-import 'package:darlink/modules/setting_screen.dart';
+import 'package:darlink/modules/event_detail_screen.dart';
+import 'package:darlink/modules/navigation/home_screen.dart';
+import 'package:darlink/modules/navigation/message_screen.dart';
+import 'package:darlink/modules/navigation/profile_screen.dart';
+import 'package:darlink/modules/navigation/setting_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeLayout extends StatefulWidget {
@@ -16,12 +17,7 @@ class _HomeLayoutState extends State<HomeLayout>
 
   final List<Widget> _pages = [
     const HomeScreen(),
-    Center(
-      child: Text(
-        'Search Page',
-        style: TextStyle(color: Colors.white),
-      ),
-    ),
+    EventPage(),
     const ProfileScreen(),
     const MessageScreen(),
     const SettingScreen(),

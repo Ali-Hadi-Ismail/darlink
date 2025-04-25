@@ -1,6 +1,7 @@
 import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/models/propertyData.dart';
-import 'package:darlink/modules/profile_screen.dart';
+import 'package:darlink/modules/navigation/profile_screen.dart';
+
 import 'package:darlink/modules/property_detail_screen.dart';
 import 'package:darlink/shared/widgets/propertyCard.dart';
 import 'package:darlink/shared/widgets/filter_bottom.dart';
