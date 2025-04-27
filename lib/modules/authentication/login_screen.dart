@@ -1,6 +1,11 @@
+import 'dart:developer';
+
 import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import '../../constants/Database_url.dart';
+import '../../layout/home_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,21 +26,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _hasStartedTypingEmail = false;
   bool _hasStartedTypingPassword = false;
+  bool exists_pass = false;
+  bool exists_email = false;
 
-  void _validateAndLogin() {
+  get result_email => null;
+
+  Future<void> _validateAndLogin() async {
+    var db = await mongo.Db.create(Mongo_Url);
+    await db.open();
+    inspect(db);
+    var collection = db.collection("user");
+
+    final result_email = await collection
+        .findOne(mongo.where.eq("Email", _emailController.text));
+    if (result_email != null) {
+      exists_email = true;
+    }
+
     setState(() {
-      _emailError = _emailController.text.isEmpty
-          ? 'Email cannot be empty'
-          : (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text)
-              ? 'Enter a valid email'
-              : null);
+      if (_emailController.text.isEmpty) {
+        _emailError = 'Email cannot be empty';
+      } else if (exists_email == false) {
+        _emailError = 'Email does not exist';
+      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+          .hasMatch(_emailController.text)) {
+        _emailError = 'Enter a valid email';
+      } else {
+        _emailError = null;
+      }
 
-      _passwordError =
-          _passwordController.text.isEmpty ? 'Password cannot be empty' : null;
+      if (_passwordController.text.isEmpty) {
+        _passwordError = 'password cannot be empty';
+      } else if (_passwordController.text !=
+          result_email?['Password'] as String) {
+        _passwordError = 'Password is incorrect';
+      } else {
+        _passwordError = null;
+      }
     });
 
     if (_emailError == null && _passwordError == null) {
       print("Login Successful");
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeLayout()),
+      );
     }
   }
 
@@ -84,11 +119,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (value) {
                   setState(() {
                     _hasStartedTypingEmail = true;
-                    _emailError = value.isEmpty
-                        ? 'Email cannot be empty'
-                        : (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
-                            ? 'Enter a valid email'
-                            : null);
+                    if (_emailController.text.isEmpty) {
+                      _emailError = 'Email cannot be empty';
+                    } else if (exists_email == false) {
+                      _emailError = 'Email does not exist';
+                    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                        .hasMatch(_emailController.text)) {
+                      _emailError = 'Enter a valid email';
+                    } else {
+                      _emailError = null;
+                    }
                   });
                 },
               ),
@@ -119,8 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (value) {
                   setState(() {
                     _hasStartedTypingPassword = true;
-                    _passwordError =
-                        value.isEmpty ? 'Password cannot be empty' : null;
+                    if (_passwordController.text.isEmpty) {
+                      _passwordError = 'password cannot be empty';
+                    } else if (_passwordController.text !=
+                        result_email?['Password'] as String) {
+                      _passwordError = 'Password is incorrect';
+                    } else {
+                      _passwordError = null;
+                    }
                   });
                 },
               ),

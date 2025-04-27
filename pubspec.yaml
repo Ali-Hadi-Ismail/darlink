@@ -22,6 +22,7 @@ dependencies:
   google_maps_flutter: ^2.12.1
   panorama_viewer: ^2.0.4
   image_picker: ^1.1.2
+  mongo_dart: ^0.10.4
 
 dev_dependencies:
   flutter_test:

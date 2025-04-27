@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import '../../constants/Database_url.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -24,20 +28,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _hasStartedTypingUsername = false;
   bool _hasStartedTypingEmail = false;
   bool _hasStartedTypingPassword = false;
+  bool exists_name = false;
+  bool exists_email = false;
 
-  void _validateAndRegister() {
+  Future<void> _validateAndRegister() async {
+    exists_name = false;
+    exists_email = false;
+
+    var db = await mongo.Db.create(Mongo_Url);
+    await db.open();
+    inspect(db);
+    var collection = db.collection("user");
+
+    final result_name = await collection
+        .findOne(mongo.where.eq("name", _usernameController.text));
+    if (result_name != null) {
+      exists_name = true;
+    }
+
+    final result_email = await collection
+        .findOne(mongo.where.eq("Email", _emailController.text));
+    if (result_email != null) {
+      exists_email = true;
+    }
+
     setState(() {
-      _usernameError = _usernameController.text.isEmpty
-          ? 'Username cannot be empty'
-          : (_usernameController.text.length < 6
-              ? 'Username must be at least 6 characters'
-              : null);
+      if (_usernameController.text.isEmpty) {
+        _usernameError = 'Username cannot be empty';
+      } else if (exists_name == true) {
+        _usernameError = 'Username already exists';
+      } else if (_usernameController.text.length < 6) {
+        _usernameError = 'Username must be at least 6 characters';
+      } else {
+        _usernameError = null;
+      }
 
-      _emailError = _emailController.text.isEmpty
-          ? 'Email cannot be empty'
-          : (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text)
-              ? 'Enter a valid email'
-              : null);
+      if (_emailController.text.isEmpty) {
+        _emailError = 'Email cannot be empty';
+      } else if (exists_email == true) {
+        _emailError = 'Email already exists';
+      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+          .hasMatch(_emailController.text)) {
+        // Check if email is valid
+        _emailError = 'Enter a valid email';
+      } else {
+        // Valid email, no error
+        _emailError = null;
+      }
 
       _passwordError =
           _passwordController.text.isEmpty ? 'Password cannot be empty' : null;
@@ -47,6 +84,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailError == null &&
         _passwordError == null) {
       print("Registration Successful");
+      await collection.insertOne({
+        "name": _usernameController.text,
+        "Password": _passwordController.text,
+        "Email": _emailController.text
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
 
@@ -95,11 +141,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onChanged: (value) {
                   setState(() {
                     _hasStartedTypingUsername = true;
-                    _usernameError = value.isEmpty
-                        ? 'Username cannot be empty'
-                        : (value.length < 6
-                            ? 'Username must be at least 6 characters'
-                            : null);
+                    if (_usernameController.text.isEmpty) {
+                      _usernameError = 'Username cannot be empty';
+                    } else if (exists_name == true) {
+                      _usernameError = 'Username already exists';
+                    } else if (_usernameController.text.length < 6) {
+                      _usernameError = 'Username must be at least 6 characters';
+                    } else {
+                      _usernameError = null;
+                    }
                   });
                 },
               ),
@@ -116,11 +166,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onChanged: (value) {
                   setState(() {
                     _hasStartedTypingEmail = true;
-                    _emailError = value.isEmpty
-                        ? 'Email cannot be empty'
-                        : (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
-                            ? 'Enter a valid email'
-                            : null);
+                    if (_emailController.text.isEmpty) {
+                      _emailError = 'Email cannot be empty';
+                    } else if (exists_email == true) {
+                      _emailError = 'Email already exists';
+                    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                        .hasMatch(_emailController.text)) {
+                      // Check if email is valid
+                      _emailError = 'Enter a valid email';
+                    } else {
+                      // Valid email, no error
+                      _emailError = null;
+                    }
                   });
                 },
               ),

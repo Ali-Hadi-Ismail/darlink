@@ -1,9 +1,12 @@
-import 'package:darlink/layout/home_layout.dart';
-import 'package:darlink/modules/admin/admin_dashboard.dart';
+import 'package:darlink/constants/Database_url.dart';
+
+import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
   runApp(const DarLinkApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  await MongoDatabase.connect();
 }
 
 class DarLinkApp extends StatelessWidget {
@@ -18,7 +21,7 @@ class DarLinkApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: AdminDashboard(),
+      home: LoginScreen(),
     );
   }
 }
