@@ -1,4 +1,6 @@
-import 'package:darlink/shared/widgets/propertyCard.dart';
+import 'package:darlink/models/property.dart';
+import 'package:darlink/shared/widgets/card/propertyCard.dart';
+
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
 
@@ -7,139 +9,226 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    // Dummy property data
+    final Property property = Property(
+      title: "Green Valley Villa",
+      price: 3200.00,
+      address: "123 Eco Lane, Greenville",
+      area: 1800,
+      bedrooms: 3,
+      bathrooms: 2,
+      kitchens: 1,
+      ownerName: "Ahmad Nasser",
+      imageUrl: "assets/images/building.jpg",
+      amenities: ["Solar Panels", "Rainwater Harvesting", "Organic Garden"],
+      interiorDetails: ["Bamboo Flooring", "Energy-Efficient Lighting"],
+    );
+
     return Scaffold(
-      backgroundColor: backGroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: backGroundColor,
-        title: const Text(
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+        title: Text(
           'Owner Profile',
-          style: TextStyle(color: Colors.white),
+          style: textTheme.titleLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Row : Image & Name & Gmail
+            // Profile Header with green accent
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              child: Row(
+              padding: const EdgeInsets.only(top: 20, bottom: 30),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage("assets/images/mounir.jpg"),
+                  // Profile Info
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundImage:
+                                const AssetImage("assets/images/mounir.jpg"),
+                            backgroundColor: colors.surfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Mouniro",
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Eco Property Specialist",
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.star, color: Colors.amber, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "4.9 (128 reviews)",
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 20),
+
+                  // Contact Buttons
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildActionButton(
+                          icon: Icons.message_rounded,
+                          color: AppColors.primary,
+                          label: "Message",
+                          onTap: () => print("Message"),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.calendar_month,
+                          color: AppColors.primary,
+                          label: "Schedule",
+                          onTap: () => print("Schedule"),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.call,
+                          color: AppColors.primary,
+                          label: "Call",
+                          onTap: () => print("Call"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // About Section
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "About",
+                    style: textTheme.titleLarge?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Specializing in eco-friendly properties with 10+ years experience. "
+                    "Committed to sustainable living and green architecture.",
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Properties Section
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Mouniro",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
+                        "My Properties",
+                        style: textTheme.titleLarge?.copyWith(
+                          color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "Mouniro@gmail.com",
-                        style: TextStyle(color: Colors.grey),
-                      )
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          "View All",
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
-                  )
-                ],
-              ),
-            ),
+                  ),
+                  const SizedBox(height: 10),
 
-            // Message & Schedule & Call
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildActionButton(
-                    icon: Icons.message_rounded,
-                    color: Colors.blue,
-                    label: "Message",
-                    onTap: () => print("Message"),
-                  ),
-                  _buildActionButton(
-                    icon: Icons.calendar_month,
-                    color: Colors.orange,
-                    label: "Schedule",
-                    onTap: () => print("Schedule"),
-                  ),
-                  _buildActionButton(
-                    icon: Icons.call,
-                    color: Colors.green,
-                    label: "Call",
-                    onTap: () => print("Call"),
+                  // Property List
+                  ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: PropertyCard(property: property),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            // Property Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                "Property",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  fontFamily: 'Poppins montserrat',
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Property List
-            // In your ListView.builder or anywhere else:
-            PropertyCard(
-              imageUrl: 'assets/images/building.jpg',
-              name: 'Luxury Villa',
-              price: 2500.00,
-              address: '123 Palm Street, Miami, FL',
-              size: 1800,
-              bedrooms: 3,
-              bathrooms: 2,
-              kitchens: 1,
-            ),
-            PropertyCard(
-              imageUrl: 'assets/images/building.jpg',
-              name: 'Luxury Villa',
-              price: 2500.00,
-              address: '123 Palm Street, Miami, FL',
-              size: 1800,
-              bedrooms: 3,
-              bathrooms: 2,
-              kitchens: 1,
-            ),
-            PropertyCard(
-              imageUrl: 'assets/images/building.jpg',
-              name: 'Luxury Villa',
-              price: 2500.00,
-              address: '123 Palm Street, Miami, FL',
-              size: 1800,
-              bedrooms: 3,
-              bathrooms: 2,
-              kitchens: 1,
-            ),
-            PropertyCard(
-              imageUrl: 'assets/images/building.jpg',
-              name: 'Luxury Villa',
-              price: 2500.00,
-              address: '123 Palm Street, Miami, FL',
-              size: 1800,
-              bedrooms: 3,
-              bathrooms: 2,
-              kitchens: 1,
-            )
           ],
         ),
       ),
@@ -152,29 +241,27 @@ class ProfileScreen extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.15),
+        foregroundColor: color,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 30),
-            const SizedBox(height: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        elevation: 0,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
       ),
     );
   }

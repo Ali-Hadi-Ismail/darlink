@@ -4,7 +4,7 @@ import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../../constants/Database_url.dart';
+import '../../constants/database_url.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -35,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     exists_name = false;
     exists_email = false;
 
-    var db = await mongo.Db.create(Mongo_Url);
+    var db = await mongo.Db.create(mongo_url);
     await db.open();
     inspect(db);
     var collection = db.collection("user");

@@ -1,12 +1,17 @@
-import 'package:darlink/constants/colors/app_color.dart';
-import 'package:darlink/modules/event_detail_screen.dart';
+import 'package:darlink/constants/colors/theme_template_manger.dart';
+import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/navigation/home_screen.dart';
 import 'package:darlink/modules/navigation/message_screen.dart';
 import 'package:darlink/modules/navigation/profile_screen.dart';
 import 'package:darlink/modules/navigation/setting_screen.dart';
+import 'package:darlink/shared/cubit/app_cubit.dart';
+import 'package:darlink/shared/cubit/app_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeLayout extends StatefulWidget {
+  const HomeLayout({super.key});
+
   @override
   _HomeLayoutState createState() => _HomeLayoutState();
 }
@@ -17,7 +22,7 @@ class _HomeLayoutState extends State<HomeLayout>
 
   final List<Widget> _pages = [
     const HomeScreen(),
-    EventPage(),
+    EventScreen(),
     const ProfileScreen(),
     const MessageScreen(),
     const SettingScreen(),
@@ -32,7 +37,9 @@ class _HomeLayoutState extends State<HomeLayout>
   Widget _buildBottomNavigationBarItem({
     required IconData icon,
     required int index,
+    required BuildContext context,
   }) {
+    final theme = Theme.of(context);
     final bool isSelected = _selectedIndex == index;
 
     return GestureDetector(
@@ -43,17 +50,21 @@ class _HomeLayoutState extends State<HomeLayout>
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            height: isSelected ? 50 : 40, // Bubble effect
+            height: isSelected ? 50 : 40,
             width: isSelected ? 50 : 40,
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.purpleAccent.withOpacity(0.4)
+                  ? theme.colorScheme.primary.withOpacity(0.2)
                   : Colors.transparent,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon,
-                color: (isSelected) ? Colors.purple.shade900 : Colors.purple,
-                size: isSelected ? 30 : 25),
+            child: Icon(
+              icon,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withOpacity(0.6),
+              size: isSelected ? 30 : 25,
+            ),
           ),
           const SizedBox(height: 4),
           AnimatedOpacity(
@@ -62,8 +73,8 @@ class _HomeLayoutState extends State<HomeLayout>
             child: Container(
               height: 4,
               width: 4,
-              decoration: const BoxDecoration(
-                color: Colors.purple,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
             ),
@@ -75,41 +86,55 @@ class _HomeLayoutState extends State<HomeLayout>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backGroundColor,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 500), // Smooth page transition
-        switchInCurve: Curves.easeInOut,
-        switchOutCurve: Curves.easeInOut,
-        child: _pages[_selectedIndex],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: backGroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20), // Rounded top corners
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+    final theme = Theme.of(context);
+
+    return BlocConsumer<AppCubit, AppCubitState>(
+        listener: (context, state) => (),
+        builder: (context, state) {
+          final cubit = AppCubit.get(context);
+          AppThemeManager.initialize(cubit);
+
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeInOut,
+              child: _pages[_selectedIndex],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavigationBarItem(icon: Icons.home, index: 0),
-            _buildBottomNavigationBarItem(icon: Icons.search, index: 1),
-            _buildBottomNavigationBarItem(icon: Icons.person, index: 2),
-            _buildBottomNavigationBarItem(icon: Icons.message, index: 3),
-            _buildBottomNavigationBarItem(icon: Icons.settings, index: 4),
-          ],
-        ),
-      ),
-    );
+            bottomNavigationBar: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildBottomNavigationBarItem(
+                      icon: Icons.home, index: 0, context: context),
+                  _buildBottomNavigationBarItem(
+                      icon: Icons.search, index: 1, context: context),
+                  _buildBottomNavigationBarItem(
+                      icon: Icons.person, index: 2, context: context),
+                  _buildBottomNavigationBarItem(
+                      icon: Icons.message, index: 3, context: context),
+                  _buildBottomNavigationBarItem(
+                      icon: Icons.settings, index: 4, context: context),
+                ],
+              ),
+            ),
+          );
+        });
   }
 }

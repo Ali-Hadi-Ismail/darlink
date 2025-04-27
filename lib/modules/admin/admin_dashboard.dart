@@ -2,7 +2,7 @@ import 'package:darlink/modules/admin/events_management_screen.dart';
 import 'package:flutter/material.dart';
 
 class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({Key? key}) : super(key: key);
+  const AdminDashboard({super.key});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -167,7 +167,7 @@ class _AdminOption {
 
 class _OptionCard extends StatefulWidget {
   final _AdminOption option;
-  const _OptionCard({Key? key, required this.option}) : super(key: key);
+  const _OptionCard({required this.option});
 
   @override
   State<_OptionCard> createState() => _OptionCardState();

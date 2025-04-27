@@ -4,7 +4,7 @@ import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../../constants/Database_url.dart';
+import '../../constants/database_url.dart';
 import '../../layout/home_layout.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   get result_email => null;
 
   Future<void> _validateAndLogin() async {
-    var db = await mongo.Db.create(Mongo_Url);
+    var db = await mongo.Db.create(mongo_url);
     await db.open();
     inspect(db);
     var collection = db.collection("user");

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UsersPage extends StatefulWidget {
-  const UsersPage({Key? key}) : super(key: key);
+  const UsersPage({super.key});
 
   @override
   State<UsersPage> createState() => _UsersPageState();
@@ -39,7 +39,6 @@ class _UsersPageState extends State<UsersPage> {
   ];
 
   final ImagePicker _picker = ImagePicker();
-  String? _selectedImagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +196,6 @@ class _UsersPageState extends State<UsersPage> {
       final XFile? pickedFile = await _picker.pickImage(source: source);
       if (pickedFile != null) {
         setState(() {
-          _selectedImagePath = pickedFile.path;
           // In a real app, you would upload this image to a server
           // and get back a URL to store in the user's avatarUrl field
 
@@ -513,12 +511,12 @@ class UserCard extends StatelessWidget {
   final VoidCallback onProfilePictureTap;
 
   const UserCard({
-    Key? key,
+    super.key,
     required this.user,
     required this.onEdit,
     required this.onDelete,
     required this.onProfilePictureTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

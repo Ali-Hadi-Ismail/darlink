@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/* import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -22,7 +22,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backGroundColor,
+      backgroundColor: Colors.amber,
       body: Column(
         children: [
           const SizedBox(height: 125),
@@ -186,3 +186,4 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 }
+ */

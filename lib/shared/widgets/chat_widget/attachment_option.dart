@@ -4,9 +4,9 @@ class AttachmentOptions extends StatelessWidget {
   final Animation<double> animation;
 
   const AttachmentOptions({
-    Key? key,
+    super.key,
     required this.animation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

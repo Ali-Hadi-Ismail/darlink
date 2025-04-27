@@ -39,7 +39,7 @@ class Property {
 }
 
 class PropertiesPage extends StatefulWidget {
-  const PropertiesPage({Key? key}) : super(key: key);
+  const PropertiesPage({super.key});
 
   @override
   State<PropertiesPage> createState() => _PropertiesPageState();
