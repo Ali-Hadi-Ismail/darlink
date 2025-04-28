@@ -1,4 +1,3 @@
-import 'package:darlink/constants/colors/theme_template_manger.dart';
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 import 'package:darlink/shared/cubit/app_state.dart';
@@ -89,7 +88,6 @@ class ThemeScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         cubit.currentColor = name.toLowerCase();
-        AppThemeManager.initialize(cubit);
         print('Selected theme: $name');
         Navigator.pushReplacement(
             (context), MaterialPageRoute(builder: (context) => HomeLayout()));

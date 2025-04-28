@@ -92,7 +92,6 @@ class _HomeLayoutState extends State<HomeLayout>
         listener: (context, state) => (),
         builder: (context, state) {
           final cubit = AppCubit.get(context);
-          AppThemeManager.initialize(cubit);
 
           return Scaffold(
             backgroundColor: theme.colorScheme.background,

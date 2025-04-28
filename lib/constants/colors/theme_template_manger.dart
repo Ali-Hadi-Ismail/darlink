@@ -12,33 +12,25 @@ class AppThemeManager {
     'dark': DarkTemplate(),
   };
 
-  static String _currentTheme = "green"; // Default theme
+  static String _currentTheme = "green";
 
-  // Initialize with cubit
-  static void initialize(dynamic cubit) async {
-    _currentTheme = cubit.currentColor; // Set default theme from cubit
-  }
+  // No longer need initialize method since Cubit will handle it
+  // Remove the initialize method
 
-  // Get current template
   static ColorTemplate get currentTemplate => _templates[_currentTheme]!;
 
-  // Set current theme by name
   static void setTheme(String themeName) {
     if (_templates.containsKey(themeName)) {
       _currentTheme = themeName;
-      // Add notification mechanism if needed
     }
   }
 
-  // Get available theme names
   static List<String> get availableThemes => _templates.keys.toList();
 
-  // Get template by name
   static ColorTemplate getTemplate(String name) {
-    return _templates[name] ?? _templates['redBlack']!;
+    return _templates[name] ?? _templates['green']!;
   }
 
-  // Add a new template
   static void addTemplate(String name, ColorTemplate template) {
     _templates[name] = template;
   }
