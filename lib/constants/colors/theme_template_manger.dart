@@ -4,7 +4,7 @@ import 'package:darlink/constants/colors/template/dark_template.dart';
 import 'package:darlink/constants/colors/template/green_template.dart';
 import 'package:darlink/constants/colors/template/redBlack_template.dart';
 
-class AppThemeManager {
+class ThemeTemplateManager {
   static final _templates = {
     'green': GreenTemplate(),
     'redBlack': RedBlackTemplate(),

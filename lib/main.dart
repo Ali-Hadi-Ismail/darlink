@@ -3,7 +3,6 @@ import 'package:darlink/constants/app_theme_data.dart';
 import 'package:darlink/constants/database_url.dart';
 import 'package:darlink/layout/home_layout.dart';
 
-import 'package:darlink/modules/setting/theme.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 
 import 'package:flutter/material.dart';

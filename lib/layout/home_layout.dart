@@ -1,4 +1,3 @@
-import 'package:darlink/constants/colors/theme_template_manger.dart';
 import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/navigation/home_screen.dart';
 import 'package:darlink/modules/navigation/message_screen.dart';

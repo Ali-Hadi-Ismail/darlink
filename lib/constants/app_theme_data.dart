@@ -11,15 +11,15 @@ class AppThemeData {
     final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getString(_themeKey);
     if (savedTheme != null &&
-        AppThemeManager.availableThemes.contains(savedTheme)) {
-      AppThemeManager.setTheme(savedTheme);
+        ThemeTemplateManager.availableThemes.contains(savedTheme)) {
+      ThemeTemplateManager.setTheme(savedTheme);
     }
   }
 
   static Future<void> saveTheme(String themeName) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_themeKey, themeName);
-    AppThemeManager.setTheme(themeName);
+    ThemeTemplateManager.setTheme(themeName);
   }
 
   // Generate theme based on the current template

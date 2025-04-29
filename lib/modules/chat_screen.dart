@@ -1,4 +1,3 @@
-import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/models/contact.dart';
 import 'package:darlink/models/message.dart';
 import 'package:darlink/shared/widgets/chat_widget/attachment_option.dart';
