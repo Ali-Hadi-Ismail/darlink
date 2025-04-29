@@ -12,7 +12,7 @@ class ThemeTemplateManager {
     'dark': DarkTemplate(),
   };
 
-  static String _currentTheme = "green";
+  static String _currentTheme = "redBlack";
 
   // No longer need initialize method since Cubit will handle it
   // Remove the initialize method
