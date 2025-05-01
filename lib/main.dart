@@ -30,13 +30,12 @@ class DarLinkApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppCubit, AppCubitState>(
-      // Rebuild on ANY state change to ensure theme updates
       buildWhen: (previous, current) => true,
       builder: (context, state) {
         print("App rebuilt with state: ${state.runtimeType}");
 
         return MaterialApp(
-          key: UniqueKey(), // Force complete rebuild of widget tree
+          key: UniqueKey(),
           title: 'Darlink',
           debugShowCheckedModeBanner: false,
           theme: AppThemeData.lightTheme,

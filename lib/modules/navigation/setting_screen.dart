@@ -1,3 +1,4 @@
+import 'package:darlink/modules/setting/contact_us_screen.dart';
 import 'package:darlink/modules/setting/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -53,7 +54,7 @@ class SettingScreen extends StatelessWidget {
                   size: 20,
                 ),
               ),
-              title: "Change Password",
+              title: "Contact Us",
             ),
             _buildSettingItem(
               context: context,
@@ -162,13 +163,23 @@ class SettingScreen extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          if (title == "Theme") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ThemeScreen(),
-              ),
-            );
+          switch (title) {
+            case "Theme":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ThemeScreen(),
+                ),
+              );
+              break;
+            case "Contact Us":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ContactUsPage(),
+                ),
+              );
+              break;
           }
         },
         child: Container(

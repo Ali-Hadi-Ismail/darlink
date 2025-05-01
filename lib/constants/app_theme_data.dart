@@ -1,11 +1,8 @@
-import 'package:darlink/constants/colors/theme_template_manger.dart';
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AppThemeData {
   // Theme persistence
-  static const String _themeKey = 'app_theme';
 
   static ThemeData get lightTheme {
     return ThemeData(

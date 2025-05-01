@@ -12,6 +12,7 @@ analyzer:
     deprecated_member_use: ignore
     avoid_print: ignore ignore ignore ignore
     non_constant_identifier_names: ignore
+    unused_import: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:
