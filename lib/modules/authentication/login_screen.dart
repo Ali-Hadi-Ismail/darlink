@@ -4,8 +4,13 @@ import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../../constants/database_url.dart';
+import '../../constants/Database_url.dart' as mg;
 import '../../layout/home_layout.dart';
+import '../../constants/colors/app_color.dart';
+
+// Global variables for user data
+String usermail = "";
+String username = "";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,13 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _hasStartedTypingEmail = false;
   bool _hasStartedTypingPassword = false;
-  bool exists_pass = false;
   bool exists_email = false;
-
-  get result_email => null;
+  String result_password = "";
 
   Future<void> _validateAndLogin() async {
-    var db = await mongo.Db.create(mongo_url);
+    var db = await mongo.Db.create(mg.mongo_url);
     await db.open();
     inspect(db);
     var collection = db.collection("user");
@@ -56,17 +59,21 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (_passwordController.text.isEmpty) {
-        _passwordError = 'password cannot be empty';
+        _passwordError = 'Password cannot be empty';
       } else if (_passwordController.text !=
           result_email?['Password'] as String) {
         _passwordError = 'Password is incorrect';
       } else {
         _passwordError = null;
+        result_password = result_email?['Password'] as String;
       }
     });
 
     if (_emailError == null && _passwordError == null) {
       print("Login Successful");
+      usermail = _emailController.text;
+      username = result_email?['name'] as String;
+      print(result_email?['Password'] as String);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeLayout()),
@@ -76,15 +83,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF4C44EB),
+      backgroundColor: theme.colorScheme.primary,
       body: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          color: Color(0xFF1C1D39),
+          color:
+              isDarkMode ? AppColors.backgroundDark : theme.colorScheme.surface,
         ),
         margin: EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.2),
         width: double.infinity,
@@ -96,12 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Login',
-                style: TextStyle(
-                  fontSize: 28,
+                style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                   fontFamily: 'Poppins',
                 ),
                 textAlign: TextAlign.center,
@@ -113,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 label: 'Email',
                 icon: FontAwesomeIcons.envelope,
-                iconColor: Colors.green,
+                iconColor: Colors.white,
                 hintText: 'Enter your email',
                 errorText: _hasStartedTypingEmail ? _emailError : null,
                 onChanged: (value) {
@@ -147,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     _isPasswordVisible
                         ? Icons.visibility
                         : Icons.visibility_off,
-                    color: Colors.white,
+                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
                   ),
                   onPressed: () {
                     setState(() {
@@ -160,9 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   setState(() {
                     _hasStartedTypingPassword = true;
                     if (_passwordController.text.isEmpty) {
-                      _passwordError = 'password cannot be empty';
-                    } else if (_passwordController.text !=
-                        result_email?['Password'] as String) {
+                      _passwordError = 'Password cannot be empty';
+                    } else if (_passwordController.text != result_password) {
                       _passwordError = 'Password is incorrect';
                     } else {
                       _passwordError = null;
@@ -176,19 +184,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(
                 onPressed: _validateAndLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purpleAccent,
+                  backgroundColor: AppColors.secondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text(
+                child: Text(
                   'Login',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -196,11 +203,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               // Social Media Buttons
-              const Text(
+              Text(
                 'Or login with',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -225,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   _buildSocialButton(
                     icon: FontAwesomeIcons.apple,
-                    color: Colors.black,
+                    color: isDarkMode ? Colors.white : Colors.black,
                     onTap: () => print('Apple Login'),
                   ),
                 ],
@@ -243,18 +248,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
                 child: RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     text: "Don't have an account? ",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                      fontFamily: 'Poppins',
-                    ),
+                    style: theme.textTheme.bodySmall,
                     children: [
                       TextSpan(
                         text: "Register",
                         style: TextStyle(
-                          color: Colors.purpleAccent,
+                          color: AppColors.secondary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           fontFamily: 'Poppins',
@@ -282,21 +283,32 @@ class _LoginScreenState extends State<LoginScreen> {
     String? errorText,
     required Function(String) onChanged,
   }) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final fieldBackgroundColor =
+        isDarkMode ? AppColors.cardDarkBackground : const Color(0xFF2C2D49);
+
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       onChanged: onChanged,
+      autocorrect: true,
+      autofocus: true,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: errorText != null ? Colors.red : Colors.white,
-          fontSize: 16,
+          color: errorText != null
+              ? AppColors.error
+              : (isDarkMode
+                  ? AppColors.textOnDark
+                  : theme.textTheme.headlineMedium!.color),
+          fontSize: 18,
           fontFamily: 'Poppins',
         ),
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintStyle: TextStyle(color: theme.textTheme.headlineLarge!.color),
         filled: true,
-        fillColor: const Color(0xFF2C2D49),
+        fillColor: theme.primaryColor.withOpacity(0.7),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
@@ -309,22 +321,24 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         suffixIcon: suffixIcon,
+        alignLabelWithHint: true,
+        hintTextDirection: TextDirection.ltr,
         errorText: errorText,
-        errorStyle: const TextStyle(color: Colors.red),
+        errorStyle: TextStyle(color: AppColors.error),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(
-            color: errorText != null ? Colors.red : Colors.purpleAccent,
+            color: errorText != null ? AppColors.error : Colors.black,
             width: 2,
           ),
         ),
       ),
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: isDarkMode ? AppColors.textOnDark : Colors.white,
         fontSize: 16,
         fontFamily: 'Poppins',
       ),
@@ -341,7 +355,14 @@ class _LoginScreenState extends State<LoginScreen> {
       child: CircleAvatar(
         radius: 30, // Larger background circle
         backgroundColor: color.withOpacity(0.2),
-        child: FaIcon(icon, color: color, size: 24),
+        child: FaIcon(
+          icon,
+          color: icon == FontAwesomeIcons.apple &&
+                  Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : color,
+          size: 24,
+        ),
       ),
     );
   }

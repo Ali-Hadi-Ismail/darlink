@@ -141,7 +141,8 @@ class ThemeScreen extends StatelessWidget {
 
         // Change the theme using the cubit
         await cubit.changeTheme(key);
-
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeLayout()));
         // Don't navigate away - let user see the changes and decide
       },
       child: Column(

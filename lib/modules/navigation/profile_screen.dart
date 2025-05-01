@@ -1,11 +1,55 @@
+import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/models/property.dart';
 import 'package:darlink/shared/widgets/card/propertyCard.dart';
-
+import 'package:darlink/modules/authentication/login_screen.dart' as lg;
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import '../../constants/Database_url.dart' as mg;
 
-class ProfileScreen extends StatelessWidget {
+var username = "";
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    getAllTodo();
+  }
+
+  Future<void> getAllTodo() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("user");
+    username = (await collection.findOne(mongo.where.eq("Email", lg.usermail)))
+        as String;
+    print(username); // Or handle the retrieved document as needed
+    await db.close();
+    setState(() async {
+      username = (await collection
+          .findOne(mongo.where.eq("Email", lg.usermail))) as String;
+    });
+  }
+
+  final Property property = Property(
+    title: "Green Valley Villa",
+    price: 3200.00,
+    address: "123 Eco Lane, Greenville",
+    area: 1800,
+    bedrooms: 3,
+    bathrooms: 2,
+    kitchens: 1,
+    ownerName: "Ahmad Nasser",
+    imageUrl: "assets/images/building.jpg",
+    amenities: ["Solar Panels", "Rainwater Harvesting", "Organic Garden"],
+    interiorDetails: ["Bamboo Flooring", "Energy-Efficient Lighting"],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -13,39 +57,30 @@ class ProfileScreen extends StatelessWidget {
     final colors = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    // Dummy property data
-    final Property property = Property(
-      title: "Green Valley Villa",
-      price: 3200.00,
-      address: "123 Eco Lane, Greenville",
-      area: 1800,
-      bedrooms: 3,
-      bathrooms: 2,
-      kitchens: 1,
-      ownerName: "Ahmad Nasser",
-      imageUrl: "assets/images/building.jpg",
-      amenities: ["Solar Panels", "Rainwater Harvesting", "Organic Garden"],
-      interiorDetails: ["Bamboo Flooring", "Energy-Efficient Lighting"],
-    );
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: Text(
-          'Owner Profile',
-          style: textTheme.titleLarge?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          title: Text(
+            'Owner Profile',
+            style: textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+          iconTheme: const IconThemeData(color: Colors.white),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pushReplacement(
+                (context),
+                MaterialPageRoute(
+                  builder: (context) => HomeLayout(),
+                ),
+              );
+            },
+          )),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +122,7 @@ class ProfileScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Mouniro",
+                              lg.username,
                               style: textTheme.headlineSmall?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
@@ -95,7 +130,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "Eco Property Specialist",
+                              lg.usermail,
                               style: textTheme.bodyMedium?.copyWith(
                                 color: Colors.grey[700],
                               ),

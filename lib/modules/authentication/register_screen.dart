@@ -1,10 +1,12 @@
 import 'dart:developer';
 
+import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 import '../../constants/database_url.dart';
+import '../../constants/colors/app_color.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -69,10 +71,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailError = 'Email already exists';
       } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
           .hasMatch(_emailController.text)) {
-        // Check if email is valid
         _emailError = 'Enter a valid email';
       } else {
-        // Valid email, no error
         _emailError = null;
       }
 
@@ -98,15 +98,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF4C44EB),
+      backgroundColor: theme.colorScheme.primary,
       body: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          color: Color(0xFF1C1D39),
+          color:
+              isDarkMode ? AppColors.backgroundDark : theme.colorScheme.surface,
         ),
         margin: EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.2),
         width: double.infinity,
@@ -118,12 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Register',
-                style: TextStyle(
-                  fontSize: 28,
+                style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                   fontFamily: 'Poppins',
                 ),
                 textAlign: TextAlign.center,
@@ -172,10 +174,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _emailError = 'Email already exists';
                     } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                         .hasMatch(_emailController.text)) {
-                      // Check if email is valid
                       _emailError = 'Enter a valid email';
                     } else {
-                      // Valid email, no error
                       _emailError = null;
                     }
                   });
@@ -196,7 +196,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _isPasswordVisible
                         ? Icons.visibility
                         : Icons.visibility_off,
-                    color: Colors.white,
+                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
                   ),
                   onPressed: () {
                     setState(() {
@@ -219,19 +219,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ElevatedButton(
                 onPressed: _validateAndRegister,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purpleAccent,
+                  backgroundColor: AppColors.secondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text(
+                child: Text(
                   'Register',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -239,11 +238,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               // Social Media Buttons
-              const Text(
+              Text(
                 'Or register with',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -268,8 +265,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   _buildSocialButton(
                     icon: FontAwesomeIcons.apple,
-                    color: Colors.black,
-                    onTap: () => print('Apple Login'),
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HomeLayout()),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -278,25 +281,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Login Text
               GestureDetector(
                 onTap: () {
-                  // Navigate to Login Page
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                   );
                 },
                 child: RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     text: "Already have an account? ",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                      fontFamily: 'Poppins',
-                    ),
+                    style: theme.textTheme.bodySmall,
                     children: [
                       TextSpan(
                         text: "Login",
                         style: TextStyle(
-                          color: Colors.purpleAccent,
+                          color: AppColors.secondary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           fontFamily: 'Poppins',
@@ -324,21 +323,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String? errorText,
     required Function(String) onChanged,
   }) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final fieldBackgroundColor =
+        isDarkMode ? AppColors.cardDarkBackground : const Color(0xFF2C2D49);
+
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       onChanged: onChanged,
+      autocorrect: true,
+      autofocus: true,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: errorText != null ? Colors.red : Colors.white,
-          fontSize: 16,
+          color: errorText != null
+              ? AppColors.error
+              : (isDarkMode
+                  ? AppColors.textOnDark
+                  : theme.textTheme.headlineMedium!.color),
+          fontSize: 18,
           fontFamily: 'Poppins',
         ),
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintStyle: TextStyle(color: theme.textTheme.headlineLarge!.color),
         filled: true,
-        fillColor: const Color(0xFF2C2D49),
+        fillColor: theme.primaryColor.withOpacity(0.7),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
@@ -351,22 +361,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
         suffixIcon: suffixIcon,
+        alignLabelWithHint: true,
+        hintTextDirection: TextDirection.ltr,
         errorText: errorText,
-        errorStyle: const TextStyle(color: Colors.red),
+        errorStyle: TextStyle(color: AppColors.error),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(
-            color: errorText != null ? Colors.red : Colors.purpleAccent,
+            color: errorText != null ? AppColors.error : Colors.black,
             width: 2,
           ),
         ),
       ),
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: isDarkMode ? AppColors.textOnDark : Colors.white,
         fontSize: 16,
         fontFamily: 'Poppins',
       ),
@@ -378,12 +390,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: CircleAvatar(
-        radius: 30, // Larger background circle
+        radius: 30,
         backgroundColor: color.withOpacity(0.2),
-        child: FaIcon(icon, color: color, size: 24),
+        child: FaIcon(
+          icon,
+          color: icon == FontAwesomeIcons.apple && isDarkMode
+              ? Colors.white
+              : color,
+          size: 24,
+        ),
       ),
     );
   }

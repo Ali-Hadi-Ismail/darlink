@@ -1,3 +1,4 @@
+import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/setting/contact_us_screen.dart';
 import 'package:darlink/modules/setting/notification_screen.dart';
 import 'package:darlink/modules/setting/theme.dart';
@@ -111,6 +112,12 @@ class SettingScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
                   // Handle logout
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
                 },
                 child: Container(
                   padding:
