@@ -18,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Property? property; // To hold fetched property data
-  bool isLoading = true; // To show loading indicator if needed
+  bool isLoading = false; // To show loading indicator if needed
 
   @override
   void initState() {

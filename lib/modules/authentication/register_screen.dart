@@ -116,196 +116,199 @@ class _RegisterScreenState extends State<RegisterScreen> {
         width: double.infinity,
         height: double.infinity,
         padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Register',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-
-              // Username Field
-              _buildTextField(
-                controller: _usernameController,
-                label: 'Username',
-                icon: FontAwesomeIcons.user,
-                iconColor: Colors.orange,
-                hintText: 'Enter your username',
-                errorText: _hasStartedTypingUsername ? _usernameError : null,
-                onChanged: (value) {
-                  setState(() {
-                    _hasStartedTypingUsername = true;
-                    if (_usernameController.text.isEmpty) {
-                      _usernameError = 'Username cannot be empty';
-                    } else if (exists_name == true) {
-                      _usernameError = 'Username already exists';
-                    } else if (_usernameController.text.length < 6) {
-                      _usernameError = 'Username must be at least 6 characters';
-                    } else {
-                      _usernameError = null;
-                    }
-                  });
-                },
-              ),
-              const SizedBox(height: 15),
-
-              // Email Field
-              _buildTextField(
-                controller: _emailController,
-                label: 'Email',
-                icon: FontAwesomeIcons.envelope,
-                iconColor: Colors.green,
-                hintText: 'Enter your email',
-                errorText: _hasStartedTypingEmail ? _emailError : null,
-                onChanged: (value) {
-                  setState(() {
-                    _hasStartedTypingEmail = true;
-                    if (_emailController.text.isEmpty) {
-                      _emailError = 'Email cannot be empty';
-                    } else if (exists_email == true) {
-                      _emailError = 'Email already exists';
-                    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                        .hasMatch(_emailController.text)) {
-                      _emailError = 'Enter a valid email';
-                    } else {
-                      _emailError = null;
-                    }
-                  });
-                },
-              ),
-              const SizedBox(height: 15),
-
-              // Password Field
-              _buildTextField(
-                controller: _passwordController,
-                label: 'Password',
-                icon: FontAwesomeIcons.lock,
-                iconColor: Colors.purple,
-                hintText: 'Enter your password',
-                obscureText: !_isPasswordVisible,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Register',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
                   ),
-                  onPressed: () {
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // Username Field
+                _buildTextField(
+                  controller: _usernameController,
+                  label: 'Username',
+                  icon: FontAwesomeIcons.user,
+                  iconColor: Colors.orange,
+                  hintText: 'Enter your username',
+                  errorText: _hasStartedTypingUsername ? _usernameError : null,
+                  onChanged: (value) {
                     setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
+                      _hasStartedTypingUsername = true;
+                      if (_usernameController.text.isEmpty) {
+                        _usernameError = 'Username cannot be empty';
+                      } else if (exists_name == true) {
+                        _usernameError = 'Username already exists';
+                      } else if (_usernameController.text.length < 6) {
+                        _usernameError =
+                            'Username must be at least 6 characters';
+                      } else {
+                        _usernameError = null;
+                      }
                     });
                   },
                 ),
-                errorText: _hasStartedTypingPassword ? _passwordError : null,
-                onChanged: (value) {
-                  setState(() {
-                    _hasStartedTypingPassword = true;
-                    _passwordError =
-                        value.isEmpty ? 'Password cannot be empty' : null;
-                  });
-                },
-              ),
-              const SizedBox(height: 30),
+                const SizedBox(height: 15),
 
-              // Register Button
-              ElevatedButton(
-                onPressed: _validateAndRegister,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  minimumSize: const Size(double.infinity, 50),
+                // Email Field
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  icon: FontAwesomeIcons.envelope,
+                  iconColor: Colors.green,
+                  hintText: 'Enter your email',
+                  errorText: _hasStartedTypingEmail ? _emailError : null,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasStartedTypingEmail = true;
+                      if (_emailController.text.isEmpty) {
+                        _emailError = 'Email cannot be empty';
+                      } else if (exists_email == true) {
+                        _emailError = 'Email already exists';
+                      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                          .hasMatch(_emailController.text)) {
+                        _emailError = 'Enter a valid email';
+                      } else {
+                        _emailError = null;
+                      }
+                    });
+                  },
                 ),
-                child: Text(
-                  'Register',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? AppColors.textOnDark : Colors.white,
+                const SizedBox(height: 15),
+
+                // Password Field
+                _buildTextField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  icon: FontAwesomeIcons.lock,
+                  iconColor: Colors.purple,
+                  hintText: 'Enter your password',
+                  obscureText: !_isPasswordVisible,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: isDarkMode ? AppColors.textOnDark : Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
+                  errorText: _hasStartedTypingPassword ? _passwordError : null,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasStartedTypingPassword = true;
+                      _passwordError =
+                          value.isEmpty ? 'Password cannot be empty' : null;
+                    });
+                  },
+                ),
+                const SizedBox(height: 30),
+
+                // Register Button
+                ElevatedButton(
+                  onPressed: _validateAndRegister,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: Text(
+                    'Register',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? AppColors.textOnDark : Colors.white,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Social Media Buttons
+                Text(
+                  'Or register with',
+                  style: theme.textTheme.bodySmall?.copyWith(
                     fontFamily: 'Poppins',
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Social Media Buttons
-              Text(
-                'Or register with',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontFamily: 'Poppins',
+                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSocialButton(
+                      icon: FontAwesomeIcons.facebookF,
+                      color: Colors.blue,
+                      onTap: () => print('Facebook Login'),
+                    ),
+                    _buildSocialButton(
+                      icon: FontAwesomeIcons.google,
+                      color: Colors.red,
+                      onTap: () => print('Google Login'),
+                    ),
+                    _buildSocialButton(
+                      icon: FontAwesomeIcons.envelope,
+                      color: Colors.green,
+                      onTap: () => print('Gmail Login'),
+                    ),
+                    _buildSocialButton(
+                      icon: FontAwesomeIcons.apple,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HomeLayout()),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildSocialButton(
-                    icon: FontAwesomeIcons.facebookF,
-                    color: Colors.blue,
-                    onTap: () => print('Facebook Login'),
-                  ),
-                  _buildSocialButton(
-                    icon: FontAwesomeIcons.google,
-                    color: Colors.red,
-                    onTap: () => print('Google Login'),
-                  ),
-                  _buildSocialButton(
-                    icon: FontAwesomeIcons.envelope,
-                    color: Colors.green,
-                    onTap: () => print('Gmail Login'),
-                  ),
-                  _buildSocialButton(
-                    icon: FontAwesomeIcons.apple,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HomeLayout()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Login Text
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginScreen()),
-                  );
-                },
-                child: RichText(
-                  text: TextSpan(
-                    text: "Already have an account? ",
-                    style: theme.textTheme.bodySmall,
-                    children: [
-                      TextSpan(
-                        text: "Login",
-                        style: TextStyle(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          fontFamily: 'Poppins',
+                // Login Text
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Already have an account? ",
+                      style: theme.textTheme.bodySmall,
+                      children: [
+                        TextSpan(
+                          text: "Login",
+                          style: TextStyle(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontFamily: 'Poppins',
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
