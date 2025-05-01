@@ -1,5 +1,7 @@
 import 'package:darlink/modules/setting/contact_us_screen.dart';
+import 'package:darlink/modules/setting/notification_screen.dart';
 import 'package:darlink/modules/setting/theme.dart';
+import 'package:darlink/modules/setting/wishlist.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -75,12 +77,12 @@ class SettingScreen extends StatelessWidget {
                 radius: 20,
                 backgroundColor: Colors.yellow.withOpacity(0.2),
                 child: FaIcon(
-                  FontAwesomeIcons.mobileAlt,
+                  FontAwesomeIcons.heart,
                   color: Colors.yellow[700],
                   size: 20,
                 ),
               ),
-              title: "Data Saver",
+              title: "WishList",
             ),
             _buildSettingItem(
               context: context,
@@ -180,6 +182,21 @@ class SettingScreen extends StatelessWidget {
                 ),
               );
               break;
+            case "Notification":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationScreen(),
+                ),
+              );
+              break;
+            case "WishList":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WishListScreen(),
+                ),
+              );
           }
         },
         child: Container(
