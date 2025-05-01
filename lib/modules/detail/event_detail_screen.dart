@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class EventDetailPage extends StatelessWidget {
   final Map<String, String> event;
 
-  const EventDetailPage({required this.event});
+  const EventDetailPage({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {

@@ -1,33 +1,50 @@
 import 'package:darlink/constants/app_theme_data.dart';
-
 import 'package:darlink/constants/database_url.dart';
 import 'package:darlink/layout/home_layout.dart';
-
 import 'package:darlink/shared/cubit/app_cubit.dart';
-
+import 'package:darlink/shared/cubit/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 Future<void> main() async {
-  runApp(const DarLinkApp());
   WidgetsFlutterBinding.ensureInitialized();
-  await MongoDatabase.connect();
+  // await MongoDatabase.connect();
+  runApp(MyApp());
 }
 
-class DarLinkApp extends StatelessWidget {
-  const DarLinkApp({super.key});
-
+// Wrapper app that never rebuilds
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AppCubit(),
-      child: MaterialApp(
-        title: 'Darlink',
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.dark,
-        theme: (true) ? AppThemeData.lightTheme : AppThemeData.darkTheme,
-        home: HomeLayout(),
-      ),
+      child: const DarLinkApp(),
+    );
+  }
+}
+
+// The actual app that rebuilds with theme changes
+class DarLinkApp extends StatelessWidget {
+  const DarLinkApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AppCubit, AppCubitState>(
+      // Rebuild on ANY state change to ensure theme updates
+      buildWhen: (previous, current) => true,
+      builder: (context, state) {
+        print("App rebuilt with state: ${state.runtimeType}");
+
+        return MaterialApp(
+          key: UniqueKey(), // Force complete rebuild of widget tree
+          title: 'Darlink',
+          debugShowCheckedModeBanner: false,
+          theme: AppThemeData.lightTheme,
+          darkTheme: AppThemeData.darkTheme,
+          themeMode: ThemeMode.light, // Using light for now
+          home: HomeLayout(),
+        );
+      },
     );
   }
 }

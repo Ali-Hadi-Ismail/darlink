@@ -7,22 +7,6 @@ class AppThemeData {
   // Theme persistence
   static const String _themeKey = 'app_theme';
 
-  static Future<void> loadSavedTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedTheme = prefs.getString(_themeKey);
-    if (savedTheme != null &&
-        ThemeTemplateManager.availableThemes.contains(savedTheme)) {
-      ThemeTemplateManager.setTheme(savedTheme);
-    }
-  }
-
-  static Future<void> saveTheme(String themeName) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, themeName);
-    ThemeTemplateManager.setTheme(themeName);
-  }
-
-  // Generate theme based on the current template
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,

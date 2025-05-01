@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EventManagementScreen extends StatelessWidget {
-  const EventManagementScreen({Key? key}) : super(key: key);
+  const EventManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

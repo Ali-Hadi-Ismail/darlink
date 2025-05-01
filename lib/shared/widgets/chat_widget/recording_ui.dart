@@ -6,11 +6,11 @@ class RecordingUI extends StatelessWidget {
   final VoidCallback onSendPressed;
 
   const RecordingUI({
-    Key? key,
+    super.key,
     required this.recordingDuration,
     required this.onDeletePressed,
     required this.onSendPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

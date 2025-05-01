@@ -1,3 +1,4 @@
+import 'package:darlink/constants/colors/theme_template_manger.dart';
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 import 'package:darlink/shared/cubit/app_state.dart';
@@ -5,27 +6,57 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ThemeScreen extends StatelessWidget {
+  // Updated color options with lowercase keys to match ThemeTemplateManager
   final List<Map<String, dynamic>> colorOptions = [
-    {'name': 'Green', 'color': Colors.green, 'icon': Icons.grass},
-    {'name': 'Blue', 'color': Colors.blue, 'icon': Icons.water},
-    {'name': 'Red', 'color': Colors.red, 'icon': Icons.favorite},
-    {'name': 'Purple', 'color': Colors.purple, 'icon': Icons.brush},
-    {'name': 'Orange', 'color': Colors.orange, 'icon': Icons.brightness_5},
-    {'name': 'Teal', 'color': Colors.teal, 'icon': Icons.waves},
+    {
+      'name': 'Green',
+      'key': 'green',
+      'color': Colors.green,
+      'icon': Icons.grass
+    },
+    {'name': 'Blue', 'key': 'blue', 'color': Colors.blue, 'icon': Icons.water},
+    {
+      'name': 'RedBlack',
+      'key': 'redblack',
+      'color': Colors.red,
+      'icon': Icons.favorite
+    },
+    {
+      'name': 'Dark',
+      'key': 'dark',
+      'color': Colors.grey[800],
+      'icon': Icons.dark_mode
+    },
   ];
+
+  ThemeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print("Building ThemeScreen");
+    // Print available themes for debugging
+    ThemeTemplateManager.printAvailableThemes();
+
     return BlocConsumer<AppCubit, AppCubitState>(
-      listener: (context, state) => {},
+      listener: (context, state) {
+        if (state is AppThemeChangedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Theme changed to ${state.themeName}'),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      },
       builder: (context, state) {
         final cubit = AppCubit.get(context);
+        print("Current color in ThemeScreen: ${cubit.currentColor}");
 
         return Scaffold(
-          backgroundColor: Colors.grey[100],
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(
             title: const Text('Theme Selection'),
-            backgroundColor: Colors.green, // Default color
+            backgroundColor: Theme.of(context).primaryColor,
           ),
           body: SingleChildScrollView(
             child: Column(
@@ -61,6 +92,7 @@ class ThemeScreen extends StatelessWidget {
                             children: colorOptions.map((option) {
                               return _buildColorOption(
                                   option['name'],
+                                  option['key'],
                                   option['color'],
                                   option['icon'],
                                   cubit,
@@ -74,6 +106,21 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _buildCurrentThemeInfo(cubit, context),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeLayout()),
+                    );
+                  },
+                  child: const Text('Apply & Return Home'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                ),
               ],
             ),
           ),
@@ -82,14 +129,19 @@ class ThemeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildColorOption(
-      String name, Color color, IconData icon, cubit, context) {
+  Widget _buildColorOption(String name, String key, Color color, IconData icon,
+      AppCubit cubit, BuildContext context) {
+    // Check if this option is the current theme
+    final isSelected = cubit.currentColor == key;
+
     return GestureDetector(
-      onTap: () {
-        cubit.currentColor = name.toLowerCase();
-        print('Selected theme: $name');
-        Navigator.pushReplacement(
-            (context), MaterialPageRoute(builder: (context) => HomeLayout()));
+      onTap: () async {
+        print("Tapped on $name theme with key: $key");
+
+        // Change the theme using the cubit
+        await cubit.changeTheme(key);
+
+        // Don't navigate away - let user see the changes and decide
       },
       child: Column(
         children: [
@@ -99,31 +151,51 @@ class ThemeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withOpacity(0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: color, width: 2),
+              border: Border.all(
+                color: isSelected ? color : color.withOpacity(0.5),
+                width: isSelected ? 3 : 2,
+              ),
             ),
-            child: Icon(icon, color: color, size: 30),
+            child: Icon(
+              icon,
+              color: color,
+              size: 30,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             name,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Theme.of(context).primaryColor : null,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCurrentThemeInfo(cubit, context) {
+  Widget _buildCurrentThemeInfo(AppCubit cubit, BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      color: Theme.of(context).cardColor,
+      color: Theme.of(context).cardTheme.color,
       child: ListTile(
-        leading: Icon(Icons.color_lens, color: Colors.grey),
-        title: Text('Current Theme'),
-        subtitle: Text('${cubit.currentColor} (default)'),
-        trailing:
-            Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
+        leading: Icon(Icons.color_lens, color: Theme.of(context).primaryColor),
+        title: const Text('Current Theme'),
+        subtitle: Text(cubit.currentColor.capitalize()),
+        trailing: Icon(
+          Icons.check_circle,
+          color: Theme.of(context).primaryColor,
+        ),
       ),
     );
+  }
+}
+
+// Extension to capitalize the first letter of a string
+extension StringExtension on String {
+  String capitalize() {
+    if (this.isEmpty) return this;
+    return "${this[0].toUpperCase()}${this.substring(1)}";
   }
 }

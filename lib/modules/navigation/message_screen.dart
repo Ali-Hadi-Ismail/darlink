@@ -1,4 +1,4 @@
-import 'package:darlink/modules/chat_screen.dart';
+import 'package:darlink/modules/setting/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 class MessageScreen extends StatelessWidget {

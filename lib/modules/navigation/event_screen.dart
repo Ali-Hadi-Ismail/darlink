@@ -41,6 +41,8 @@ class EventScreen extends StatelessWidget {
     },
   ];
 
+  EventScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

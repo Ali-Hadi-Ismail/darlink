@@ -3,35 +3,64 @@ import 'package:darlink/constants/colors/template/blue_template.dart';
 import 'package:darlink/constants/colors/template/dark_template.dart';
 import 'package:darlink/constants/colors/template/green_template.dart';
 import 'package:darlink/constants/colors/template/redBlack_template.dart';
+import 'package:flutter/foundation.dart';
 
 class ThemeTemplateManager {
+  // Define available templates - all lowercase keys
   static final _templates = {
     'green': GreenTemplate(),
-    'redBlack': RedBlackTemplate(),
+    'redblack': RedBlackTemplate(),
     'blue': BlueTemplate(),
     'dark': DarkTemplate(),
   };
 
-  static String _currentTheme = "redBlack";
+  // Default theme
+  static String _currentTheme = "green";
 
-  // No longer need initialize method since Cubit will handle it
-  // Remove the initialize method
+  // Getter for current template
+  static ColorTemplate get currentTemplate {
+    final template = _templates[_currentTheme];
+    if (template == null) {
+      print("WARNING: Theme $_currentTheme not found, using default");
+      return _templates['green']!;
+    }
+    return template;
+  }
 
-  static ColorTemplate get currentTemplate => _templates[_currentTheme]!;
-
+  // Method to set the current theme
   static void setTheme(String themeName) {
-    if (_templates.containsKey(themeName)) {
-      _currentTheme = themeName;
+    // Always convert to lowercase for consistency
+    final normalizedName = themeName.toLowerCase();
+
+    if (_templates.containsKey(normalizedName)) {
+      if (_currentTheme != normalizedName) {
+        print('Changing theme from $_currentTheme to $normalizedName');
+        _currentTheme = normalizedName;
+      }
+    } else {
+      print(
+          'Theme "$normalizedName" not found, available themes: ${availableThemes.join(", ")}');
+      _currentTheme = 'green'; // Fallback to default
     }
   }
 
+  // Get all available theme names
   static List<String> get availableThemes => _templates.keys.toList();
 
+  // Get a specific template by name
   static ColorTemplate getTemplate(String name) {
-    return _templates[name] ?? _templates['green']!;
+    final normalizedName = name.toLowerCase();
+    final template = _templates[normalizedName];
+    if (template == null) {
+      print("WARNING: Template $normalizedName not found, using default");
+      return _templates['green']!;
+    }
+    return template;
   }
 
-  static void addTemplate(String name, ColorTemplate template) {
-    _templates[name] = template;
+  // Debug method to print all themes
+  static void printAvailableThemes() {
+    print("Available themes: ${availableThemes.join(", ")}");
+    print("Current theme: $_currentTheme");
   }
 }

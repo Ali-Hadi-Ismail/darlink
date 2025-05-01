@@ -8,9 +8,9 @@ class PropertyDetailsScreen extends StatefulWidget {
   final Property property;
 
   const PropertyDetailsScreen({
-    Key? key,
+    super.key,
     required this.property,
-  }) : super(key: key);
+  });
 
   @override
   _PropertyDetailsScreenState createState() => _PropertyDetailsScreenState();

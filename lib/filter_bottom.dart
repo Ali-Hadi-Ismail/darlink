@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RealEstateApp extends StatefulWidget {
-  const RealEstateApp({Key? key}) : super(key: key);
+  const RealEstateApp({super.key});
 
   @override
   State<RealEstateApp> createState() => _RealEstateAppState();
