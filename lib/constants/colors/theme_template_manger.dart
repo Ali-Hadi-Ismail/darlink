@@ -1,7 +1,9 @@
 import 'package:darlink/constants/colors/colors_template.dart';
 import 'package:darlink/constants/colors/template/blue_template.dart';
-import 'package:darlink/constants/colors/template/dark_template.dart';
+import 'package:darlink/constants/colors/template/grey_template.dart';
 import 'package:darlink/constants/colors/template/green_template.dart';
+import 'package:darlink/constants/colors/template/orange_template.dart';
+import 'package:darlink/constants/colors/template/purple_template.dart';
 import 'package:darlink/constants/colors/template/redBlack_template.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,9 +11,11 @@ class ThemeTemplateManager {
   // Define available templates - all lowercase keys
   static final _templates = {
     'green': GreenTemplate(),
-    'redblack': RedBlackTemplate(),
+    'red': RedBlackTemplate(),
     'blue': BlueTemplate(),
-    'dark': DarkTemplate(),
+    'orange': OrangeTemplate(),
+    'purple': PurpleTemplate(),
+    'grey': GreyTemplate(),
   };
 
   // Default theme

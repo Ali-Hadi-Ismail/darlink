@@ -14,18 +14,35 @@ class ThemeScreen extends StatelessWidget {
       'color': Colors.green,
       'icon': Icons.grass
     },
-    {'name': 'Blue', 'key': 'blue', 'color': Colors.blue, 'icon': Icons.water},
     {
-      'name': 'RedBlack',
-      'key': 'redblack',
-      'color': Colors.red,
-      'icon': Icons.favorite
+      'name': 'Blue',
+      'key': 'blue',
+      'color': Colors.blue,
+      'icon': Icons.water,
     },
     {
-      'name': 'Dark',
-      'key': 'dark',
-      'color': Colors.grey[800],
-      'icon': Icons.dark_mode
+      'name': 'Red',
+      'key': 'red',
+      'color': Colors.red,
+      'icon': Icons.favorite,
+    },
+    {
+      'name': 'Purple',
+      'key': 'purple',
+      'color': Colors.purple,
+      'icon': Icons.storm
+    },
+    {
+      'name': 'Orange',
+      'key': 'orange',
+      'color': Colors.orange,
+      'icon': Icons.wb_sunny_sharp
+    },
+    {
+      'name': 'Grey',
+      'key': 'grey',
+      'color': Colors.grey,
+      'icon': Icons.dark_mode_sharp
     },
   ];
 
@@ -74,6 +91,7 @@ class ThemeScreen extends StatelessWidget {
                             'Choose App Theme',
                             style: TextStyle(
                               fontSize: 18,
+                              color: Colors.black,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -102,23 +120,6 @@ class ThemeScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildCurrentThemeInfo(cubit, context),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeLayout()),
-                    );
-                  },
-                  child: const Text('Apply & Return Home'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
                   ),
                 ),
               ],

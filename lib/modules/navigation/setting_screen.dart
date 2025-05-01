@@ -14,8 +14,7 @@ class SettingScreen extends StatelessWidget {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDarkMode ? theme.colorScheme.background : Colors.grey[50],
+      backgroundColor: theme.primaryColor.withOpacity(0.05),
       appBar: AppBar(
         backgroundColor: theme.colorScheme.primary,
         elevation: 0,
