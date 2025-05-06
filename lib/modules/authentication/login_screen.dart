@@ -11,6 +11,7 @@ import '../../constants/colors/app_color.dart';
 // Global variables for user data
 String usermail = "";
 String username = "";
+bool isValid = false;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

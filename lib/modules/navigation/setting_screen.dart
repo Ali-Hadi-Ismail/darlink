@@ -3,6 +3,7 @@ import 'package:darlink/modules/setting/contact_us_screen.dart';
 import 'package:darlink/modules/setting/notification_screen.dart';
 import 'package:darlink/modules/setting/theme.dart';
 import 'package:darlink/modules/setting/wishlist.dart';
+import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -70,6 +71,19 @@ class SettingScreen extends StatelessWidget {
                 ),
               ),
               title: "Theme",
+            ),
+            _buildSettingItem(
+              context: context,
+              icon: CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.red.withOpacity(0.2),
+                child: FaIcon(
+                  FontAwesomeIcons.shieldHalved,
+                  color: Colors.red,
+                  size: 20,
+                ),
+              ),
+              title: "Upload Property",
             ),
             _buildSettingItem(
               context: context,
@@ -203,6 +217,15 @@ class SettingScreen extends StatelessWidget {
                   builder: (context) => WishListScreen(),
                 ),
               );
+              break;
+            case "Upload Property":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PropertyUploadScreen(),
+                ),
+              );
+              break;
           }
         },
         child: Container(

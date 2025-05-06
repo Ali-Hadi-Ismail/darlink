@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/shared/widgets/card/propertyCard.dart';
 import 'package:flutter/material.dart';
@@ -5,9 +7,8 @@ import 'package:darlink/models/property.dart';
 import 'package:darlink/modules/navigation/profile_screen.dart';
 import 'package:darlink/shared/widgets/filter_bottom.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:lottie/lottie.dart';
 import '../../constants/Database_url.dart' as mg;
-
-int id = 0;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,41 +18,63 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Property? property; // To hold fetched property data
-  bool isLoading = false; // To show loading indicator if needed
+  List<Property> properties = []; // Changed from Property? to List<Property>
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    /* _fetchProperty(); */
+    _fetchProperty();
   }
 
-/*   Future<void> _fetchProperty() async {
-    final proprty_info = await mg.collect_info_properties(id);
-    id++;
-    if (proprty_info != null) {
-      setState(() {
-        property = Property(
-          title: proprty_info['Title'] as String,
-          price: proprty_info['price'] as double,
-          address: "database akal",
-          area: (proprty_info['area']as Int64).toInt() ,
-          bedrooms: (proprty_info['bathrooms'] as Int64).toInt(),
-          bathrooms: (proprty_info['bathrooms'] as Int64).toInt(),
+  Future<void> _fetchProperty() async {
+    setState(() {
+      isLoading = true;
+    });
+    final all_proprty_info = await mg.collect_info_properties();
+
+    if (all_proprty_info != null && all_proprty_info.isNotEmpty) {
+      // Clear existing list
+      properties.clear();
+      // Loop through each property info and create Property objects
+      for (var info in all_proprty_info) {
+        properties.add(Property(
+          title: info['Title'] ?? 'No Title',
+          price: info['price'] ?? 0,
+          address: "database akal", // replace with actual address if available
+          area: (info['area'] as Int64?)?.toInt() ?? 0,
+          bedrooms: (info['bathrooms'] as Int64?)?.toInt() ?? 0,
+          bathrooms: (info['bathrooms'] as Int64?)?.toInt() ?? 0,
           kitchens: 1,
-          ownerName: proprty_info['ownerName'] as String,
+          ownerName: info['ownerName'] ?? 'Owner',
           imageUrl: "assets/images/building.jpg",
           amenities: ["swim pool", "led light"],
           interiorDetails: ["white floor"],
-        );
-        isLoading = false;
-      });
+        ));
+      }
     } else {
-      setState(() {
-        isLoading = false; // Handle null or error case
-      });
+      // Default fallback if data is null or empty
+      properties = List.generate(
+          4,
+          (index) => Property(
+                title: "Sample Property",
+                price: 100000,
+                address: "Bshamoun",
+                area: 120,
+                bedrooms: 3,
+                bathrooms: 2,
+                kitchens: 1,
+                ownerName: "Owner Name",
+                imageUrl: "assets/images/building.jpg",
+                amenities: ["swim pool", "led light"],
+                interiorDetails: ["white floor"],
+              ));
     }
-  } */
+
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,91 +84,37 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: AppColors.primary,
-          elevation: 0,
-          title: Text(
-            "Find Properties",
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ProfileScreen()),
-                ),
-                child: const CircleAvatar(
-                  backgroundImage: AssetImage("assets/images/mounir.jpg"),
-                  backgroundColor: Colors.white,
-                ),
+        appBar: _buildAppBar(context, textTheme),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: [
+              Positioned(
+                bottom: 350,
+                child: Lottie.asset("assets/lottie/birds.json",
+                    height: 300, frameRate: FrameRate.max),
               ),
-            ),
-          ],
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
+              Positioned(
+                bottom: 0,
+                child: Lottie.asset("assets/lottie/building.json",
+                    height: 300, frameRate: FrameRate.max),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    // Use a default property if the fetched data is null
-    final Property displayProperty = property ??
-        Property(
-          title: "Sample Property",
-          price: 100000,
-          address: "Bshamoun",
-          area: 120,
-          bedrooms: 3,
-          bathrooms: 2,
-          kitchens: 1,
-          ownerName: "Owner Name",
-          imageUrl: "assets/images/building.jpg",
-          amenities: ["swim pool", "led light"],
-          interiorDetails: ["white floor"],
-        );
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: Text(
-          "Find Properties",
-          style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              ),
-              child: const CircleAvatar(
-                backgroundImage: AssetImage("assets/images/mounir.jpg"),
-                backgroundColor: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(context, textTheme),
       body: Column(
         children: [
-          // Search and Filter Row
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Search Field
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
@@ -168,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Filter Button
                 ElevatedButton(
                   onPressed: () => showFilterBottomSheet(context),
                   style: ElevatedButton.styleFrom(
@@ -196,23 +164,53 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Property List
+          // Changed from ListView to ListView.builder
           Expanded(
-            child: ListView(
+            child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _buildPropertyCard(context, property: displayProperty),
-                const SizedBox(height: 16),
-                _buildPropertyCard(context, property: displayProperty),
-                const SizedBox(height: 16),
-                _buildPropertyCard(context, property: displayProperty),
-                const SizedBox(height: 16),
-                _buildPropertyCard(context, property: displayProperty),
-              ],
+              itemCount: properties.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    _buildPropertyCard(context, property: properties[index]),
+                    if (index < properties.length - 1)
+                      const SizedBox(height: 16),
+                  ],
+                );
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context, TextTheme textTheme) {
+    return AppBar(
+      backgroundColor: AppColors.primary,
+      elevation: 0,
+      title: Text(
+        "Find Properties",
+        style: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            ),
+            child: const CircleAvatar(
+              backgroundImage: AssetImage("assets/images/mounir.jpg"),
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
