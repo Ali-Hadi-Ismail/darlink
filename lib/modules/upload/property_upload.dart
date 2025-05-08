@@ -24,12 +24,12 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Text controllers
-  final TextEditingController ageController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
   final TextEditingController areaController = TextEditingController();
   final TextEditingController bedroomsController = TextEditingController();
   final TextEditingController bathroomsController = TextEditingController();
   final TextEditingController kitchensController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+
   final TextEditingController priceController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
@@ -241,6 +241,15 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                         'Basic Information', colorScheme, textTheme),
                     const SizedBox(height: 20),
                     buildTextField(
+                      "Property Title",
+                      titleController,
+                      validator: (value) => value == null || value.isEmpty
+                          ? "Title is required"
+                          : null,
+                      prefixIcon: Icons.title_outlined,
+                    ),
+                    const SizedBox(height: 20),
+                    buildTextField(
                       "Address",
                       addressController,
                       validator: (value) => value == null || value.isEmpty
@@ -339,29 +348,6 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    buildTextField(
-                      "Age of building",
-                      ageController,
-                      isNumber: true,
-                      validator: (value) => value == null || value.isEmpty
-                          ? "Building age is required"
-                          : (int.tryParse(value) == null)
-                              ? "Enter a valid age"
-                              : null,
-                      prefixIcon: Icons.calendar_today_outlined,
-                    ),
-                    const SizedBox(height: 20),
-                    buildTextField(
-                      "Description",
-                      descriptionController,
-                      maxLines: 3,
-                      validator: (value) =>
-                          value == null || value.isEmpty || value.length < 20
-                              ? "Description must be at least 20 characters"
-                              : null,
-                      prefixIcon: Icons.description_outlined,
-                    ),
-                    const SizedBox(height: 30),
                     _buildSectionHeader('Amenities', colorScheme, textTheme),
                     if (_hasAmenityError)
                       Padding(
@@ -478,7 +464,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
             title,
             style: textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: colorScheme.primary,
+              color: Colors.black.withOpacity(0.67),
               letterSpacing: 0.5,
             ),
           ),
@@ -1209,10 +1195,14 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.upload_rounded, size: 24),
+          Icon(
+            Icons.upload_rounded,
+            size: 24,
+            color: Colors.white,
+          ),
           SizedBox(width: 12),
           Text(
-            'Upload Property',
+            'Upload ',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

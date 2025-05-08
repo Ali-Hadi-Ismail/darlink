@@ -24,7 +24,7 @@ class TransactionDetailsPage extends StatelessWidget {
   final String property = "Salim Street, 150 sqft, 2 Bed, 2 Bath";
   final double amount = 15000.00;
 
-  const TransactionDetailsPage({super.key});
+  TransactionDetailsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
