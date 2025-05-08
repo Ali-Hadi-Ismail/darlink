@@ -427,7 +427,7 @@ class EventManagerProfilePage extends StatelessWidget {
                   title: event['title']!,
                   date: event['date']!,
                   location: event['location']!,
-                  imageUrl: event['image']!,
+                  imageData: "asdfasdf",
                 );
               },
             ),

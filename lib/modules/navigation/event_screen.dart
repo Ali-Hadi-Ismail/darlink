@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:darlink/modules/loading/event_load_screen.dart';
 import 'package:darlink/modules/upload/announce_event_screen.dart';
 import 'package:darlink/modules/detail/event_detail_screen.dart';
 import 'package:darlink/shared/widgets/card/event_card.dart';
@@ -44,10 +46,55 @@ class _EventScreenState extends State<EventScreen> {
     await db.open();
     var collection = db.collection("Event");
     var eventdata = await collection.find().toList();
-    print('----------------------------------------');
-    print(eventdata.toString());
-
     return eventdata;
+  }
+
+  Widget _buildImageWidget(String imageData) {
+    if (imageData.isEmpty) {
+      return Container(
+        height: 220,
+        color: Colors.grey[200],
+        child: const Icon(Icons.event, size: 50, color: Colors.grey),
+      );
+    }
+
+    // Check if the image is a URL (starts with http) or base64
+    if (imageData.startsWith('http')) {
+      return Image.network(
+        imageData,
+        height: 220,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
+    } else {
+      try {
+        return Image.memory(
+          base64Decode(imageData),
+          height: 220,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        );
+      } catch (e) {
+        return _buildPlaceholder();
+      }
+    }
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      height: 220,
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+          const SizedBox(height: 8),
+          Text('Could not load image', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
   }
 
   @override
@@ -75,13 +122,15 @@ class _EventScreenState extends State<EventScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: EventLoadScreen())
             : RefreshIndicator(
                 onRefresh: _fetchEvents,
                 child: ListView.builder(
                   itemCount: events.length,
                   itemBuilder: (context, index) {
                     final event = events[index];
+                    final imageData = event['image']?.toString() ?? '';
+
                     return AnimatedContainer(
                       duration: Duration(milliseconds: 500 + index * 100),
                       curve: Curves.easeOutBack,
@@ -101,20 +150,71 @@ class _EventScreenState extends State<EventScreen> {
                                 'description':
                                     event['description']?.toString() ??
                                         'No Description',
-                                'image': event['image']?.toString() ?? '',
+                                'image': imageData,
                                 'price': event['price']?.toString() ?? 'Free',
                                 'celeb': event['celeb']?.toString() ?? '',
                               }),
                             ),
                           );
                         },
-                        child: EventCard(
-                          title: event['Event Name']?.toString() ?? 'No Title',
-                          date: event['date']?.toString() ?? 'No Date',
-                          location: event['location'] != null
-                              ? '${event['location']['latitude']}, ${event['location']['longitude']}'
-                              : 'No Location',
-                          imageUrl: event['image']?.toString() ?? '',
+                        child: Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Column(
+                            children: [
+                              // Hero animation for smooth transition
+                              Hero(
+                                tag: 'event-image-${event['_id']}',
+                                child: _buildImageWidget(imageData),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      event['Event Name']?.toString() ??
+                                          'No Title',
+                                      style: theme.textTheme.titleLarge,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.calendar_today, size: 16),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          event['date']?.toString() ??
+                                              'No Date',
+                                          style: theme.textTheme.bodyMedium,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.location_on, size: 16),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            event['location'] != null
+                                                ? '${event['location']['latitude']}, ${event['location']['longitude']}'
+                                                : 'No Location',
+                                            style: theme.textTheme.bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -127,11 +227,10 @@ class _EventScreenState extends State<EventScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AnnouceEventScreen()),
-          ).then(
-              (_) => _fetchEvents()); // Refresh events after adding a new one
+          ).then((_) => _fetchEvents());
         },
+        child: const Icon(Icons.add),
         backgroundColor: theme.colorScheme.primary,
-        child: Icon(Icons.add),
       ),
     );
   }

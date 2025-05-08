@@ -3,9 +3,11 @@ import 'package:darlink/constants/database_url.dart';
 import 'package:darlink/editable_client_profile_page.dart';
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/admin/admin_dashboard.dart';
+import 'package:darlink/modules/admin/event_data.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:darlink/modules/intro_screens/splash_screen.dart';
+import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 import 'package:darlink/shared/cubit/app_state.dart';
@@ -43,8 +45,8 @@ class DarLinkApp extends StatelessWidget {
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: ThemeMode.light,
-            //home: AdminDashboard(),
-            home: SplashScreen(isLoggedIn: isLoggedIn),
+            home: HomeLayout(),
+            //home: SplashScreen(isLoggedIn: isLoggedIn),
           );
         },
       ),

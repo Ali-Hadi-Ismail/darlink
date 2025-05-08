@@ -1,22 +1,57 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class EventCard extends StatelessWidget {
   final String title;
   final String date;
   final String location;
-  final String imageUrl;
+  final String imageData; // Can be either URL or base64 string
+  final bool isBase64Image; // Flag to determine image type
 
   const EventCard({
     super.key,
     required this.title,
     required this.date,
     required this.location,
-    required this.imageUrl,
+    required this.imageData,
+    this.isBase64Image = false, // Default to URL
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Determine the image widget based on image type
+    Widget _buildImageWidget() {
+      if (imageData.isEmpty) {
+        return _buildPlaceholder(theme);
+      }
+
+      if (isBase64Image) {
+        try {
+          return Image.memory(
+            base64Decode(imageData),
+            height: 220,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _buildPlaceholder(theme),
+          );
+        } catch (e) {
+          return _buildPlaceholder(theme);
+        }
+      } else {
+        return FadeInImage.assetNetwork(
+          placeholder: 'assets/images/placeholder.jpg',
+          image: imageData,
+          height: 220,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          imageErrorBuilder: (context, error, stackTrace) =>
+              _buildPlaceholder(theme),
+        );
+      }
+    }
 
     return Card(
       elevation: 4,
@@ -27,23 +62,8 @@ class EventCard extends StatelessWidget {
         children: [
           // Background image with hero animation
           Hero(
-            tag: imageUrl.isNotEmpty ? imageUrl : 'placeholder_$title',
-            child: FadeInImage.assetNetwork(
-              placeholder: 'assets/images/placeholder.jpg',
-              image: imageUrl.isNotEmpty
-                  ? imageUrl
-                  : 'assets/images/placeholder.jpg',
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              imageErrorBuilder: (context, error, stackTrace) => Container(
-                height: 220,
-                color: theme.colorScheme.surface,
-                alignment: Alignment.center,
-                child: Text('Image not available',
-                    style: theme.textTheme.bodyMedium),
-              ),
-            ),
+            tag: imageData.isNotEmpty ? imageData : 'placeholder_$title',
+            child: _buildImageWidget(),
           ),
 
           // Gradient overlay
@@ -113,6 +133,22 @@ class EventCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(ThemeData theme) {
+    return Container(
+      height: 220,
+      color: theme.colorScheme.surface,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.event, size: 48, color: theme.colorScheme.onSurface),
+          const SizedBox(height: 8),
+          Text('Image not available', style: theme.textTheme.bodyMedium),
         ],
       ),
     );
