@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:math';
+
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
-  bool _isVerifyingOTP = false;
+  bool _isLoading = false;
   bool _otpSent = false;
   String? _otpError;
 
@@ -52,22 +53,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  // Validate email format
+  bool _isValidEmailFormat(String email) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
+  }
+
   Future<void> _sendOTP() async {
     if (_emailError != null || _emailController.text.isEmpty) {
       return;
     }
 
     setState(() {
-      _isVerifyingOTP = true;
+      _isLoading = true;
     });
 
+    // Keep your original OTP sending logic
     bool result = await EmailOTP.sendOTP(
       email: _emailController.text,
     );
 
     setState(() {
       _otpSent = result;
-      _isVerifyingOTP = false;
+      _isLoading = false;
     });
 
     if (!result) {
@@ -82,35 +98,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     exists_email = false;
 
     // First validate all fields
-    setState(() {
-      if (_usernameController.text.isEmpty) {
+    if (_usernameController.text.isEmpty) {
+      setState(() {
         _usernameError = 'Username cannot be empty';
-      } else if (_usernameController.text.length < 6) {
+      });
+      return;
+    } else if (_usernameController.text.length < 6) {
+      setState(() {
         _usernameError = 'Username must be at least 6 characters';
-      } else {
-        _usernameError = null;
-      }
-
-      if (_emailController.text.isEmpty) {
-        _emailError = 'Email cannot be empty';
-      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-          .hasMatch(_emailController.text)) {
-        _emailError = 'Enter a valid email';
-      } else {
-        _emailError = null;
-      }
-
-      _passwordError =
-          _passwordController.text.isEmpty ? 'Password cannot be empty' : null;
-    });
-
-    if (_usernameError != null ||
-        _emailError != null ||
-        _passwordError != null) {
+      });
       return;
     }
 
-    // Check if OTP is verified
+    if (_emailController.text.isEmpty) {
+      setState(() {
+        _emailError = 'Email cannot be empty';
+      });
+      return;
+    } else if (!_isValidEmailFormat(_emailController.text)) {
+      setState(() {
+        _emailError = 'Enter a valid email';
+      });
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _passwordError = 'Password cannot be empty';
+      });
+      return;
+    }
+
+    // Check if OTP is verified (using your original logic)
     if (_otpSent) {
       if (_otpController.text.isEmpty) {
         setState(() {
@@ -120,13 +139,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       setState(() {
-        _isVerifyingOTP = true;
+        _isLoading = true;
       });
 
       bool isVerified = EmailOTP.verifyOTP(otp: _otpController.text);
 
       setState(() {
-        _isVerifyingOTP = false;
+        _isLoading = false;
         _otpError = isVerified ? null : 'Invalid OTP';
       });
 
@@ -135,65 +154,101 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     }
 
-    // Check if username/email exists in database
-    var db = await mongo.Db.create(mongo_url);
-    await db.open();
-    inspect(db);
-    var collection = db.collection('user');
-
-    final result_name = await collection
-        .findOne(mongo.where.eq('name', _usernameController.text));
-    if (result_name != null) {
-      exists_name = true;
-    }
-
-    final result_email = await collection
-        .findOne(mongo.where.eq('Email', _emailController.text));
-    if (result_email != null) {
-      exists_email = true;
-    }
-
+    // Show loading indicator
     setState(() {
-      if (exists_name) {
-        _usernameError = 'Username already exists';
-      }
-      if (exists_email) {
-        _emailError = 'Email already exists';
-      }
+      _isLoading = true;
     });
 
-    if (exists_name || exists_email) {
-      return;
+    try {
+      // Check if username/email exists in database
+      var db = await mongo.Db.create(mongo_url);
+      await db.open();
+      inspect(db);
+      var collection = db.collection('user');
+
+      final result_name = await collection
+          .findOne(mongo.where.eq('name', _usernameController.text));
+      if (result_name != null) {
+        exists_name = true;
+      }
+
+      final result_email = await collection
+          .findOne(mongo.where.eq('Email', _emailController.text));
+      if (result_email != null) {
+        exists_email = true;
+      }
+
+      setState(() {
+        if (exists_name) {
+          _usernameError = 'Username already exists';
+        }
+        if (exists_email) {
+          _emailError = 'Email already exists';
+        }
+        _isLoading = false;
+      });
+
+      if (exists_name || exists_email) {
+        return;
+      }
+
+      // All validations passed - register user
+      print("Registration Successful");
+      await collection.insert({
+        'name': _usernameController.text,
+        'Password': _passwordController.text,
+        'Email': _emailController.text
+      });
+
+      // Close database connection
+      await db.close();
+
+      // Navigate to login screen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    } catch (e) {
+      // Handle connection or database errors
+      setState(() {
+        _isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connection error. Please try again later.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      });
+      print("Database error: $e");
     }
-
-    // All validations passed - register user
-    print("Registration Successful");
-    await collection.insert({
-      'name': _usernameController.text,
-      'Password': _passwordController.text,
-      'Email': _emailController.text
-    });
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
 
+    final primaryColor = colorScheme.primary;
+    final surfaceColor =
+        isDarkMode ? AppColors.backgroundDark : colorScheme.surface;
+    final onSurfaceColor =
+        isDarkMode ? AppColors.textOnDark : colorScheme.onSurface;
+    final secondaryColor = AppColors.secondary;
+    final errorColor = colorScheme.error;
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary,
+      backgroundColor: primaryColor,
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          color:
-              isDarkMode ? AppColors.backgroundDark : theme.colorScheme.surface,
+          color: surfaceColor,
         ),
         margin: EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.2),
         width: double.infinity,
@@ -221,15 +276,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _usernameController,
                   label: 'Username',
                   icon: FontAwesomeIcons.user,
-                  iconColor: Colors.orange,
+                  iconColor: primaryColor,
                   hintText: 'Enter your username',
                   errorText: _hasStartedTypingUsername ? _usernameError : null,
                   onChanged: (value) {
                     setState(() {
                       _hasStartedTypingUsername = true;
-                      if (_usernameController.text.isEmpty) {
+
+                      if (value.isEmpty) {
                         _usernameError = 'Username cannot be empty';
-                      } else if (_usernameController.text.length < 6) {
+                      } else if (value.length < 6) {
                         _usernameError =
                             'Username must be at least 6 characters';
                       } else {
@@ -245,16 +301,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   label: 'Email',
                   icon: FontAwesomeIcons.envelope,
-                  iconColor: Colors.green,
+                  iconColor: secondaryColor,
                   hintText: 'Enter your email',
                   errorText: _hasStartedTypingEmail ? _emailError : null,
                   onChanged: (value) {
                     setState(() {
                       _hasStartedTypingEmail = true;
-                      if (_emailController.text.isEmpty) {
+
+                      if (value.isEmpty) {
                         _emailError = 'Email cannot be empty';
-                      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                          .hasMatch(_emailController.text)) {
+                      } else if (!_isValidEmailFormat(value)) {
                         _emailError = 'Enter a valid email';
                       } else {
                         _emailError = null;
@@ -264,14 +320,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   suffixIcon: !_otpSent
                       ? TextButton(
                           onPressed: _emailError == null &&
-                                  _emailController.text.isNotEmpty
+                                  _emailController.text.isNotEmpty &&
+                                  !_isLoading
                               ? _sendOTP
                               : null,
-                          child: _isVerifyingOTP
-                              ? const CircularProgressIndicator()
-                              : const Text('Send OTP'),
+                          child: _isLoading && !_otpSent
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: onSurfaceColor,
+                                  ),
+                                )
+                              : Text(
+                                  'Send OTP',
+                                  style: TextStyle(color: secondaryColor),
+                                ),
                         )
-                      : null,
+                      : Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
                 ),
                 const SizedBox(height: 15),
 
@@ -310,7 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _isPasswordVisible
                           ? Icons.visibility
                           : Icons.visibility_off,
-                      color: isDarkMode ? AppColors.textOnDark : Colors.white,
+                      color: onSurfaceColor.withOpacity(0.7),
                     ),
                     onPressed: () {
                       setState(() {
@@ -322,8 +392,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onChanged: (value) {
                     setState(() {
                       _hasStartedTypingPassword = true;
-                      _passwordError =
-                          value.isEmpty ? 'Password cannot be empty' : null;
+
+                      if (value.isEmpty) {
+                        _passwordError = 'Password cannot be empty';
+                      } else {
+                        _passwordError = null;
+                      }
                     });
                   },
                 ),
@@ -331,89 +405,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 // Register Button
                 ElevatedButton(
-                  onPressed: _isVerifyingOTP ? null : _validateAndRegister,
+                  onPressed: _isLoading ? null : _validateAndRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
+                    backgroundColor: secondaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: _isVerifyingOTP
-                      ? const CircularProgressIndicator()
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: onSurfaceColor,
+                          ),
+                        )
                       : Text(
                           'Register',
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: isDarkMode
-                                ? AppColors.textOnDark
-                                : Colors.white,
+                            color: Colors.white,
                             fontFamily: 'Poppins',
                           ),
                         ),
                 ),
                 const SizedBox(height: 20),
 
-                // Social Media Buttons
-                Text(
-                  'Or register with',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.facebookF,
-                      color: Colors.blue,
-                      onTap: () => print('Facebook Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.google,
-                      color: Colors.red,
-                      onTap: () => print('Google Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.envelope,
-                      color: Colors.green,
-                      onTap: () => print('Gmail Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.apple,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomeLayout()),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
                 // Login Text
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginScreen()),
-                    );
-                  },
+                  onTap: _isLoading
+                      ? null
+                      : () {
+                          // Navigate to Login Page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()),
+                          );
+                        },
                   child: RichText(
                     text: TextSpan(
                       text: "Already have an account? ",
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: onSurfaceColor.withOpacity(0.8),
+                      ),
                       children: [
                         TextSpan(
                           text: "Login",
                           style: TextStyle(
-                            color: AppColors.secondary,
+                            color: secondaryColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                             fontFamily: 'Poppins',
@@ -444,36 +487,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required Function(String) onChanged,
   }) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
-    final fieldBackgroundColor =
-        isDarkMode ? AppColors.cardDarkBackground : const Color(0xFF2C2D49);
+
+    // Consistent field colors based on theme
+    final fieldBackgroundColor = isDarkMode
+        ? colorScheme.surface.withOpacity(0.1)
+        : colorScheme.primary.withOpacity(0.1);
+
+    final textColor = isDarkMode ? AppColors.textOnDark : colorScheme.onSurface;
+
+    final labelColor = errorText != null
+        ? colorScheme.error
+        : (isDarkMode ? AppColors.textOnDark : colorScheme.onSurface);
 
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       onChanged: onChanged,
-      autocorrect: true,
-      autofocus: true,
+      autocorrect: false,
+      autofocus: false, // Set to false to prevent autofocus
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: errorText != null
-              ? AppColors.error
-              : (isDarkMode
-                  ? AppColors.textOnDark
-                  : theme.textTheme.headlineMedium!.color),
-          fontSize: 18,
+          color: labelColor,
+          fontSize: 16,
           fontFamily: 'Poppins',
         ),
         hintText: hintText,
-        hintStyle: TextStyle(color: theme.textTheme.headlineLarge!.color),
+        hintStyle: TextStyle(
+          color: textColor.withOpacity(0.5),
+          fontSize: 14,
+        ),
         filled: true,
-        fillColor: theme.primaryColor.withOpacity(0.7),
+        fillColor: fieldBackgroundColor,
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            backgroundColor: iconColor.withOpacity(0.3),
+            backgroundColor: iconColor.withOpacity(0.1),
             child: FaIcon(
               icon,
               color: iconColor,
@@ -483,9 +535,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         suffixIcon: suffixIcon,
         alignLabelWithHint: true,
-        hintTextDirection: TextDirection.ltr,
         errorText: errorText,
-        errorStyle: TextStyle(color: AppColors.error),
+        errorStyle: TextStyle(
+          color: colorScheme.error,
+          fontSize: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
@@ -493,37 +547,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(
-            color: errorText != null ? AppColors.error : Colors.black,
+            color: errorText != null ? colorScheme.error : colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: 1.5,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: colorScheme.error,
             width: 2,
           ),
         ),
       ),
       style: TextStyle(
-        color: isDarkMode ? AppColors.textOnDark : Colors.white,
+        color: textColor,
         fontSize: 16,
         fontFamily: 'Poppins',
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onTap,
-      child: CircleAvatar(
-        radius: 30,
-        backgroundColor: color.withOpacity(0.2),
-        child: FaIcon(
-          icon,
-          color: icon == FontAwesomeIcons.apple && isDarkMode
-              ? Colors.white
-              : color,
-          size: 24,
-        ),
       ),
     );
   }

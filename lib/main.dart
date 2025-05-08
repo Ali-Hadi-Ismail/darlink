@@ -42,8 +42,8 @@ class DarLinkApp extends StatelessWidget {
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: ThemeMode.light,
-            //  home: PropertyUploadScreen(),
-            home: SplashScreen(isLoggedIn: isLoggedIn),
+            home: RegisterScreen(),
+            // home: SplashScreen(isLoggedIn: isLoggedIn),
           );
         },
       ),
