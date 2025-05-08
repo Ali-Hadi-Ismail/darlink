@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     final all_proprty_info = await mg.collect_info_properties();
 
-    if (all_proprty_info != null && all_proprty_info.isNotEmpty) {
+    if (all_proprty_info.isNotEmpty) {
       // Clear existing list
       properties.clear();
       // Loop through each property info and create Property objects
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: _buildAppBar(context, textTheme),
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(

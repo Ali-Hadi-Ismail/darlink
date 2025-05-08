@@ -6,10 +6,10 @@ class PropertyCard extends StatelessWidget {
   final Map<String, dynamic> propertyData;
 
   const PropertyCard({
-    Key? key,
+    super.key,
     required this.propertyData,
     // Removed onRemove callback
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,8 @@ class PropertyCard extends StatelessWidget {
             height: 180,
             width: double.infinity,
             fit: BoxFit.cover,
-            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
               if (loadingProgress == null) return child;
               return Container(
                 height: 180,
@@ -47,7 +48,9 @@ class PropertyCard extends StatelessWidget {
               height: 180,
               width: double.infinity,
               color: Colors.grey[800],
-              child: const Center(child: Icon(Icons.broken_image, color: Colors.white54, size: 40)),
+              child: const Center(
+                  child: Icon(Icons.broken_image,
+                      color: Colors.white54, size: 40)),
             ),
           ),
           Padding(
@@ -86,12 +89,16 @@ class PropertyCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, size: 14, color: addressColor),
+                    const Icon(Icons.location_on,
+                        size: 14, color: addressColor),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         propertyData['address'] ?? 'N/A',
-                        style: const TextStyle(color: addressColor, fontSize: 12, fontFamily: 'Poppins'),
+                        style: const TextStyle(
+                            color: addressColor,
+                            fontSize: 12,
+                            fontFamily: 'Poppins'),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -101,10 +108,14 @@ class PropertyCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDetailItem(Icons.square_foot, detailIconColor, propertyData['sqft'] ?? 'N/A', detailTextColor),
-                    _buildDetailItem(Icons.king_bed, detailIconColor, '${propertyData['beds'] ?? '?'}', detailTextColor),
-                    _buildDetailItem(Icons.bathtub, detailIconColor, '${propertyData['baths'] ?? '?'}', detailTextColor),
-                    _buildDetailItem(Icons.directions_car, detailIconColor, '${propertyData['parking'] ?? '?'}', detailTextColor),
+                    _buildDetailItem(Icons.square_foot, detailIconColor,
+                        propertyData['sqft'] ?? 'N/A', detailTextColor),
+                    _buildDetailItem(Icons.king_bed, detailIconColor,
+                        '${propertyData['beds'] ?? '?'}', detailTextColor),
+                    _buildDetailItem(Icons.bathtub, detailIconColor,
+                        '${propertyData['baths'] ?? '?'}', detailTextColor),
+                    _buildDetailItem(Icons.directions_car, detailIconColor,
+                        '${propertyData['parking'] ?? '?'}', detailTextColor),
                   ],
                 ),
               ],
@@ -116,14 +127,16 @@ class PropertyCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailItem(IconData icon, Color iconColor, String text, Color textColor) {
+  Widget _buildDetailItem(
+      IconData icon, Color iconColor, String text, Color textColor) {
     return Row(
       children: [
         Icon(icon, size: 18, color: iconColor),
         const SizedBox(width: 6),
         Text(
           text,
-          style: TextStyle(color: textColor, fontSize: 12, fontFamily: 'Poppins'),
+          style:
+              TextStyle(color: textColor, fontSize: 12, fontFamily: 'Poppins'),
         ),
       ],
     );
@@ -132,14 +145,15 @@ class PropertyCard extends StatelessWidget {
 
 class PropertyDetailPage extends StatelessWidget {
   final Map<String, dynamic> property;
-  const PropertyDetailPage({Key? key, required this.property}) : super(key: key);
+  const PropertyDetailPage({super.key, required this.property});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: Text(property['title'] ?? 'Property Details', style: const TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+        title: Text(property['title'] ?? 'Property Details',
+            style: const TextStyle(color: Colors.white, fontFamily: 'Poppins')),
         backgroundColor: const Color(0xFF1E293B),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -165,7 +179,7 @@ class ClientViewPage extends StatefulWidget {
   final String clientEmail = 'Mouniro@gmail.com';
   final String clientAvatarUrl = 'assets/images/mouniro_avatar.png';
 
-  const ClientViewPage({Key? key}) : super(key: key);
+  const ClientViewPage({super.key});
 
   @override
   State<ClientViewPage> createState() => _ClientViewPageState();
@@ -188,7 +202,10 @@ class _ClientViewPageState extends State<ClientViewPage> {
       appBar: AppBar(
         title: const Text(
           'Client Profile',
-          style: TextStyle(color: Colors.white, fontFamily: 'Poppins', fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: primaryBgColor,
         elevation: 0,
@@ -205,7 +222,8 @@ class _ClientViewPageState extends State<ClientViewPage> {
               CircleAvatar(
                 radius: 40,
                 backgroundColor: Colors.grey[800],
-                child: const Icon(Icons.person, size: 40, color: Colors.white70),
+                child:
+                    const Icon(Icons.person, size: 40, color: Colors.white70),
               ),
               const SizedBox(width: 16),
               Column(
@@ -291,7 +309,8 @@ class _ClientViewPageState extends State<ClientViewPage> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, {
+  Widget _buildActionButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required Color color,
@@ -326,4 +345,3 @@ class _ClientViewPageState extends State<ClientViewPage> {
     );
   }
 }
-

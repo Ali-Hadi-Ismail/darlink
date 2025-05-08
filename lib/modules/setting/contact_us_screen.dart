@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
 
 class ContactUsPage extends StatelessWidget {
-  const ContactUsPage({Key? key}) : super(key: key);
+  const ContactUsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

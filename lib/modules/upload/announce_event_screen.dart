@@ -10,6 +10,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../constants/Database_url.dart' as mg;
 
 class AnnouceEventScreen extends StatefulWidget {
+  const AnnouceEventScreen({super.key});
+
   @override
   _AnnouceEventScreenState createState() => _AnnouceEventScreenState();
 }
@@ -138,7 +140,7 @@ class _AnnouceEventScreenState extends State<AnnouceEventScreen> {
                             ),
                           ),
                           SizedBox(height: 8),
-                          Container(
+                          SizedBox(
                             height: 200,
                             child: Listener(
                               onPointerDown: (_) {
@@ -220,12 +222,12 @@ class _AnnouceEventScreenState extends State<AnnouceEventScreen> {
                         );
                       }
                     },
-                    child: Text("Announce"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[600],
                       padding:
                           EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     ),
+                    child: Text("Announce"),
                   ),
                 ],
               ),

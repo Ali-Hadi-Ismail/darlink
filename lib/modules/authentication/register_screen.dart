@@ -123,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isVerifyingOTP = true;
       });
 
-      bool isVerified = await EmailOTP.verifyOTP(otp: _otpController.text);
+      bool isVerified = EmailOTP.verifyOTP(otp: _otpController.text);
 
       setState(() {
         _isVerifyingOTP = false;

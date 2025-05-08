@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class WishListScreen extends StatefulWidget {
+  const WishListScreen({super.key});
+
   @override
   _WishListScreenState createState() => _WishListScreenState();
 }
@@ -161,7 +163,7 @@ class InfoIconText extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const InfoIconText({required this.icon, required this.text});
+  const InfoIconText({super.key, required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {

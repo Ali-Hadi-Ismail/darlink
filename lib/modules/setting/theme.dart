@@ -46,7 +46,7 @@ class ThemeScreen extends StatelessWidget {
     },
   ];
 
-  ThemeScreen({Key? key}) : super(key: key);
+  ThemeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +197,7 @@ class ThemeScreen extends StatelessWidget {
 // Extension to capitalize the first letter of a string
 extension StringExtension on String {
   String capitalize() {
-    if (this.isEmpty) return this;
-    return "${this[0].toUpperCase()}${this.substring(1)}";
+    if (isEmpty) return this;
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

@@ -25,7 +25,7 @@ Future<String> collect_user_info() async {
   await db.open();
   var collection = db.collection("user");
   var userDoc =
-      await collection.findOne(mongo.where.eq("Email", lg.usermail)).toString();
+      collection.findOne(mongo.where.eq("Email", lg.usermail)).toString();
 
   return userDoc;
 }

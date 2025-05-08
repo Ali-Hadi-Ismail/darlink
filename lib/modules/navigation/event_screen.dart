@@ -130,8 +130,8 @@ class _EventScreenState extends State<EventScreen> {
           ).then(
               (_) => _fetchEvents()); // Refresh events after adding a new one
         },
-        child: Icon(Icons.add),
         backgroundColor: theme.colorScheme.primary,
+        child: Icon(Icons.add),
       ),
     );
   }

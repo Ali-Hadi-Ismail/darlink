@@ -12,7 +12,6 @@ import '../../constants/colors/app_color.dart';
 // Global variables for user data
 String usermail = "";
 String username = "";
-bool isValid = false;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +23,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -33,65 +33,128 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _hasStartedTypingEmail = false;
   bool _hasStartedTypingPassword = false;
-  bool exists_email = false;
-  String result_password = "";
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Validate email format
+  bool _isValidEmailFormat(String email) {
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
+  }
+
+  // Login logic
   Future<void> _validateAndLogin() async {
-    var db = await mongo.Db.create(mg.mongo_url);
-    await db.open();
-    inspect(db);
-    var collection = db.collection("user");
-
-    final result_email = await collection
-        .findOne(mongo.where.eq("Email", _emailController.text));
-    if (result_email != null) {
-      exists_email = true;
+    // First validate inputs before making database call
+    if (_emailController.text.isEmpty) {
+      setState(() {
+        _emailError = 'Email cannot be empty';
+      });
+      return;
     }
 
-    setState(() {
-      if (_emailController.text.isEmpty) {
-        _emailError = 'Email cannot be empty';
-      } else if (exists_email == false) {
-        _emailError = 'Email does not exist';
-      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-          .hasMatch(_emailController.text)) {
+    if (!_isValidEmailFormat(_emailController.text)) {
+      setState(() {
         _emailError = 'Enter a valid email';
-      } else {
-        _emailError = null;
-      }
+      });
+      return;
+    }
 
-      if (_passwordController.text.isEmpty) {
+    if (_passwordController.text.isEmpty) {
+      setState(() {
         _passwordError = 'Password cannot be empty';
-      } else if (_passwordController.text !=
-          result_email?['Password'] as String) {
-        _passwordError = 'Password is incorrect';
-      } else {
-        _passwordError = null;
-        result_password = result_email?['Password'] as String;
-      }
+      });
+      return;
+    }
+
+    // Show loading indicator
+    setState(() {
+      _isLoading = true;
+      _emailError = null;
+      _passwordError = null;
     });
 
-    if (_emailError == null && _passwordError == null) {
+    try {
+      var db = await mongo.Db.create(mg.mongo_url);
+      await db.open();
+      inspect(db);
+      var collection = db.collection("user");
+
+      final userDocument = await collection
+          .findOne(mongo.where.eq("Email", _emailController.text));
+
+      if (userDocument == null) {
+        setState(() {
+          _emailError = 'Account not found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Get password from document
+      final storedPassword = userDocument['Password'] as String?;
+
+      // Validate password
+      if (storedPassword != _passwordController.text) {
+        setState(() {
+          _passwordError = 'Incorrect password';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Login successful
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
-      print("Login Successful");
+
+      // Store user info
       usermail = _emailController.text;
-      username = result_email?['name'] as String;
-      print(result_email?['Password'] as String);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => HomeLayout()),
-      );
+      username = userDocument['name'] as String;
+
+      // Close database connection
+      await db.close();
+
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeLayout()),
+        );
+      }
+    } catch (e) {
+      // Handle connection or database errors
+      setState(() {
+        _isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connection error. Please try again later.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      });
+      print("Database error: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
 
+    final primaryColor = colorScheme.primary;
+    final surfaceColor =
+        isDarkMode ? AppColors.backgroundDark : colorScheme.surface;
+    final onSurfaceColor =
+        isDarkMode ? AppColors.textOnDark : colorScheme.onSurface;
+    final secondaryColor = AppColors.secondary;
+    final errorColor = colorScheme.error;
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary,
+      backgroundColor: primaryColor,
       resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
@@ -99,8 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          color:
-              isDarkMode ? AppColors.backgroundDark : theme.colorScheme.surface,
+          color: surfaceColor,
         ),
         margin: EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.2),
         width: double.infinity,
@@ -128,18 +190,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   label: 'Email',
                   icon: FontAwesomeIcons.envelope,
-                  iconColor: Colors.white,
+                  iconColor: primaryColor,
                   hintText: 'Enter your email',
                   errorText: _hasStartedTypingEmail ? _emailError : null,
                   onChanged: (value) {
                     setState(() {
                       _hasStartedTypingEmail = true;
-                      if (_emailController.text.isEmpty) {
+
+                      if (value.isEmpty) {
                         _emailError = 'Email cannot be empty';
-                      } else if (exists_email == false) {
-                        _emailError = 'Email does not exist';
-                      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                          .hasMatch(_emailController.text)) {
+                      } else if (!_isValidEmailFormat(value)) {
                         _emailError = 'Enter a valid email';
                       } else {
                         _emailError = null;
@@ -154,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   label: 'Password',
                   icon: FontAwesomeIcons.lock,
-                  iconColor: Colors.purple,
+                  iconColor: secondaryColor,
                   hintText: 'Enter your password',
                   obscureText: !_isPasswordVisible,
                   suffixIcon: IconButton(
@@ -162,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _isPasswordVisible
                           ? Icons.visibility
                           : Icons.visibility_off,
-                      color: isDarkMode ? AppColors.textOnDark : Colors.white,
+                      color: onSurfaceColor.withOpacity(0.7),
                     ),
                     onPressed: () {
                       setState(() {
@@ -174,10 +234,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   onChanged: (value) {
                     setState(() {
                       _hasStartedTypingPassword = true;
-                      if (_passwordController.text.isEmpty) {
+
+                      if (value.isEmpty) {
                         _passwordError = 'Password cannot be empty';
-                      } else if (_passwordController.text != result_password) {
-                        _passwordError = 'Password is incorrect';
                       } else {
                         _passwordError = null;
                       }
@@ -188,23 +247,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Login Button
                 ElevatedButton(
-                  onPressed: _validateAndLogin,
+                  onPressed: _isLoading ? null : _validateAndLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
+                    backgroundColor: secondaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: Text(
-                    'Login',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? AppColors.textOnDark : Colors.white,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: onSurfaceColor,
+                          ),
+                        )
+                      : Text(
+                          'Login',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 20),
 
@@ -212,23 +280,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Register Text
                 GestureDetector(
-                  onTap: () {
-                    // Navigate to Register Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const RegisterScreen()),
-                    );
-                  },
+                  onTap: _isLoading
+                      ? null
+                      : () {
+                          // Navigate to Register Page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const RegisterScreen()),
+                          );
+                        },
                   child: RichText(
                     text: TextSpan(
                       text: "Don't have an account? ",
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: onSurfaceColor.withOpacity(0.8),
+                      ),
                       children: [
                         TextSpan(
                           text: "Register",
                           style: TextStyle(
-                            color: AppColors.secondary,
+                            color: secondaryColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                             fontFamily: 'Poppins',
@@ -258,35 +330,44 @@ class _LoginScreenState extends State<LoginScreen> {
     required Function(String) onChanged,
   }) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
-    final fieldBackgroundColor =
-        isDarkMode ? AppColors.cardDarkBackground : const Color(0xFF2C2D49);
+
+    // Consistent field colors based on theme
+    final fieldBackgroundColor = isDarkMode
+        ? colorScheme.surface.withOpacity(0.1)
+        : colorScheme.primary.withOpacity(0.1);
+
+    final textColor = isDarkMode ? AppColors.textOnDark : colorScheme.onSurface;
+
+    final labelColor = errorText != null
+        ? colorScheme.error
+        : (isDarkMode ? AppColors.textOnDark : colorScheme.onSurface);
 
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       onChanged: onChanged,
-      autocorrect: true,
-      autofocus: true,
+      autocorrect: false, // Changed to false for passwords
+      autofocus: false, // Changed to false for better UX
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: errorText != null
-              ? AppColors.error
-              : (isDarkMode
-                  ? AppColors.textOnDark
-                  : theme.textTheme.headlineMedium!.color),
-          fontSize: 18,
+          color: labelColor,
+          fontSize: 16,
           fontFamily: 'Poppins',
         ),
         hintText: hintText,
-        hintStyle: TextStyle(color: theme.textTheme.headlineLarge!.color),
+        hintStyle: TextStyle(
+          color: textColor.withOpacity(0.5),
+          fontSize: 14,
+        ),
         filled: true,
-        fillColor: theme.primaryColor.withOpacity(0.7),
+        fillColor: fieldBackgroundColor,
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            backgroundColor: iconColor.withOpacity(0.3),
+            backgroundColor: iconColor.withOpacity(0.1),
             child: FaIcon(
               icon,
               color: iconColor,
@@ -296,9 +377,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         suffixIcon: suffixIcon,
         alignLabelWithHint: true,
-        hintTextDirection: TextDirection.ltr,
         errorText: errorText,
-        errorStyle: TextStyle(color: AppColors.error),
+        errorStyle: TextStyle(
+          color: colorScheme.error,
+          fontSize: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
@@ -306,13 +389,27 @@ class _LoginScreenState extends State<LoginScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(
-            color: errorText != null ? AppColors.error : Colors.black,
+            color: errorText != null ? colorScheme.error : colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: 1.5,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: colorScheme.error,
             width: 2,
           ),
         ),
       ),
       style: TextStyle(
-        color: isDarkMode ? AppColors.textOnDark : Colors.white,
+        color: textColor,
         fontSize: 16,
         fontFamily: 'Poppins',
       ),

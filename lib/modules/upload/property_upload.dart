@@ -13,6 +13,8 @@ void main() => runApp(MaterialApp(
     ));
 
 class PropertyUploadScreen extends StatefulWidget {
+  const PropertyUploadScreen({super.key});
+
   @override
   State<PropertyUploadScreen> createState() => _PropertyUploadScreenState();
 }
@@ -72,7 +74,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
 
   // Image related variables
   final ImagePicker _picker = ImagePicker();
-  List<File> _imageFiles = [];
+  final List<File> _imageFiles = [];
 
   // Validation error flags
   bool _hasAmenityError = false;

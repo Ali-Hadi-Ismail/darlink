@@ -27,7 +27,7 @@ Future<void> main() async {
 
 class DarLinkApp extends StatelessWidget {
   final bool isLoggedIn;
-  DarLinkApp({Key? key, required this.isLoggedIn});
+  const DarLinkApp({required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {

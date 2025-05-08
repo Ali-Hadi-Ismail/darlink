@@ -12,7 +12,7 @@ User mockUser = User(
 );
 
 class EditableClientProfilePage extends StatefulWidget {
-  const EditableClientProfilePage({Key? key}) : super(key: key);
+  const EditableClientProfilePage({super.key});
 
   @override
   _EditableClientProfilePageState createState() =>
