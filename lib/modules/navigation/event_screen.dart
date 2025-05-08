@@ -108,13 +108,14 @@ class _EventScreenState extends State<EventScreen> {
           'Events',
           style: theme.textTheme.headlineMedium?.copyWith(
             fontSize: 28,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
         backgroundColor: isDarkMode
             ? theme.colorScheme.surface
-            : theme.colorScheme.primary.withOpacity(0.2),
+            : theme.colorScheme.primary.withOpacity(0.7),
         elevation: 0,
         iconTheme: IconThemeData(color: theme.textTheme.headlineMedium?.color),
       ),
