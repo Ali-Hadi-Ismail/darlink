@@ -2,6 +2,7 @@ import 'package:darlink/constants/app_theme_data.dart';
 import 'package:darlink/constants/database_url.dart';
 import 'package:darlink/editable_client_profile_page.dart';
 import 'package:darlink/layout/home_layout.dart';
+import 'package:darlink/modules/admin/admin_dashboard.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:darlink/modules/intro_screens/splash_screen.dart';
@@ -42,8 +43,8 @@ class DarLinkApp extends StatelessWidget {
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: ThemeMode.light,
-            home: RegisterScreen(),
-            // home: SplashScreen(isLoggedIn: isLoggedIn),
+            //home: AdminDashboard(),
+            home: SplashScreen(isLoggedIn: isLoggedIn),
           );
         },
       ),
