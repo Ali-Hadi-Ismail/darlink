@@ -6,6 +6,7 @@ import 'package:darlink/modules/setting/wishlist.dart';
 import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -124,8 +125,9 @@ class SettingScreen extends StatelessWidget {
               elevation: 0,
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  // Handle logout
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('isLoggedIn', false);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(

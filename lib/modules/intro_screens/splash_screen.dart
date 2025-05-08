@@ -1,9 +1,12 @@
+import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:darlink/layout/home_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  bool isLoggedIn = false;
+  SplashScreen({super.key, required this.isLoggedIn});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -17,7 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeLayout()),
+        MaterialPageRoute(
+            builder: (context) =>
+                (widget.isLoggedIn) ? HomeLayout() : LoginScreen()),
       );
     });
   }

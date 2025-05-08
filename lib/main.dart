@@ -1,5 +1,6 @@
 import 'package:darlink/constants/app_theme_data.dart';
 import 'package:darlink/constants/database_url.dart';
+import 'package:darlink/editable_client_profile_page.dart';
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
@@ -10,43 +11,41 @@ import 'package:darlink/shared/cubit/app_state.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // await MongoDatabase.connect();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppCubit(),
-      child: const DarLinkApp(),
-    );
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
   }
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await MongoDatabase.connect();
+  bool loggedIn = await isLoggedIn();
+  runApp(DarLinkApp(isLoggedIn: loggedIn));
 }
 
 class DarLinkApp extends StatelessWidget {
-  const DarLinkApp({Key? key}) : super(key: key);
+  final bool isLoggedIn;
+  DarLinkApp({Key? key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppCubit, AppCubitState>(
-      buildWhen: (previous, current) => true,
-      builder: (context, state) {
-        print("App rebuilt with state: ${state.runtimeType}");
-
-        return MaterialApp(
-          key: UniqueKey(),
-          title: 'Darlink',
-          debugShowCheckedModeBanner: false,
-          theme: AppThemeData.lightTheme,
-          darkTheme: AppThemeData.darkTheme,
-          themeMode: ThemeMode.light, // Using light for now
-          home: HomeLayout(),
-        );
-      },
+    return BlocProvider(
+      create: (context) => AppCubit(), // Provide your cubit here
+      child: BlocBuilder<AppCubit, AppCubitState>(
+        builder: (context, state) {
+          return MaterialApp(
+            key: UniqueKey(),
+            title: 'Darlink',
+            debugShowCheckedModeBanner: false,
+            theme: AppThemeData.lightTheme,
+            darkTheme: AppThemeData.darkTheme,
+            themeMode: ThemeMode.light,
+            home: SplashScreen(isLoggedIn: isLoggedIn),
+          );
+        },
+      ),
     );
   }
 }

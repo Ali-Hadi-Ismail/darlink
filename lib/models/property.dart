@@ -7,7 +7,6 @@ class Property {
   final int bathrooms;
   final int kitchens;
   final String ownerName;
-
   final String imageUrl;
   final List<String> amenities;
   final List<String> interiorDetails;

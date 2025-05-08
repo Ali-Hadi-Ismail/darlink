@@ -4,6 +4,7 @@ import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/Database_url.dart' as mg;
 import '../../layout/home_layout.dart';
 import '../../constants/colors/app_color.dart';
@@ -71,6 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (_emailError == null && _passwordError == null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       print("Login Successful");
       usermail = _emailController.text;
       username = result_email?['name'] as String;
@@ -205,40 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Social Media Buttons
-                Text(
-                  'Or login with',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'Poppins',
-                  ),
-                ),
                 const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.facebookF,
-                      color: Colors.blue,
-                      onTap: () => print('Facebook Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.google,
-                      color: Colors.red,
-                      onTap: () => print('Google Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.envelope,
-                      color: Colors.green,
-                      onTap: () => print('Gmail Login'),
-                    ),
-                    _buildSocialButton(
-                      icon: FontAwesomeIcons.apple,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                      onTap: () => print('Apple Login'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
 
                 // Register Text
                 GestureDetector(
@@ -345,28 +315,6 @@ class _LoginScreenState extends State<LoginScreen> {
         color: isDarkMode ? AppColors.textOnDark : Colors.white,
         fontSize: 16,
         fontFamily: 'Poppins',
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: CircleAvatar(
-        radius: 30, // Larger background circle
-        backgroundColor: color.withOpacity(0.2),
-        child: FaIcon(
-          icon,
-          color: icon == FontAwesomeIcons.apple &&
-                  Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : color,
-          size: 24,
-        ),
       ),
     );
   }
