@@ -1,4 +1,5 @@
 import 'package:darlink/models/property.dart';
+import 'package:darlink/modules/transaction_screen.dart';
 import 'package:darlink/shared/widgets/map/Virtual_tour.dart';
 import 'package:darlink/shared/widgets/map/map_page.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +81,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
               () => setState(() => interiorExpanded = !interiorExpanded),
             ),
             _buildLocationSection(theme, colors, textTheme),
-            _buildSaveButton(theme, colors),
+            _buildTransactionButton(theme, colors, context),
             const SizedBox(height: 24),
           ],
         ),
@@ -380,11 +381,19 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 
-  Widget _buildSaveButton(ThemeData theme, ColorScheme colors) {
+  Widget _buildTransactionButton(
+      ThemeData theme, ColorScheme colors, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton(
-        onPressed: () => setState(() => isSaved = !isSaved),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TransactionScreen(),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: isSaved ? colors.secondary : colors.primary,
           minimumSize: const Size(double.infinity, 56),
@@ -393,7 +402,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
           ),
         ),
         child: Text(
-          isSaved ? 'PROPERTY SAVED' : 'SAVE THIS PROPERTY',
+          "Transaction",
           style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colors.onPrimary,

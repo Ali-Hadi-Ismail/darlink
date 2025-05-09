@@ -73,19 +73,7 @@ class SettingScreen extends StatelessWidget {
               ),
               title: "Theme",
             ),
-            _buildSettingItem(
-              context: context,
-              icon: CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.red.withOpacity(0.2),
-                child: FaIcon(
-                  FontAwesomeIcons.shieldHalved,
-                  color: Colors.red,
-                  size: 20,
-                ),
-              ),
-              title: "Upload Property",
-            ),
+
             _buildSettingItem(
               context: context,
               icon: CircleAvatar(
@@ -217,14 +205,6 @@ class SettingScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => WishListScreen(),
-                ),
-              );
-              break;
-            case "Upload Property":
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PropertyUploadScreen(),
                 ),
               );
               break;

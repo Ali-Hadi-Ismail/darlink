@@ -5,7 +5,7 @@ import 'package:darlink/modules/authentication/login_screen.dart' as lg;
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../../constants/Database_url.dart' as mg;
+import '../constants/Database_url.dart' as mg;
 
 var username = "";
 

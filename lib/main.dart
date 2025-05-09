@@ -9,6 +9,7 @@ import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:darlink/modules/intro_screens/splash_screen.dart';
 import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/setting/chat_screen.dart';
+import 'package:darlink/modules/transaction_screen.dart';
 import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 import 'package:darlink/shared/cubit/app_state.dart';

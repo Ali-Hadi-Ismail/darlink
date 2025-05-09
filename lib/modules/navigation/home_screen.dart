@@ -4,7 +4,7 @@ import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/shared/widgets/card/propertyCard.dart';
 import 'package:flutter/material.dart';
 import 'package:darlink/models/property.dart';
-import 'package:darlink/modules/navigation/profile_screen.dart';
+import 'package:darlink/modules/profile_screen.dart';
 import 'package:darlink/shared/widgets/filter_bottom.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lottie/lottie.dart';

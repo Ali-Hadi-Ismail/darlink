@@ -223,16 +223,6 @@ class _EventScreenState extends State<EventScreen> {
                 ),
               ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AnnouceEventScreen()),
-          ).then((_) => _fetchEvents());
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: theme.colorScheme.primary,
-      ),
     );
   }
 }

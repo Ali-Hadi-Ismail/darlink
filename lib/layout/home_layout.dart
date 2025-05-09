@@ -1,7 +1,8 @@
 import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/navigation/home_screen.dart';
 import 'package:darlink/modules/navigation/message_screen.dart';
-import 'package:darlink/modules/navigation/profile_screen.dart';
+import 'package:darlink/modules/navigation/upload_screen.dart';
+import 'package:darlink/modules/profile_screen.dart';
 import 'package:darlink/modules/navigation/setting_screen.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
 import 'package:darlink/shared/cubit/app_state.dart';
@@ -22,7 +23,7 @@ class _HomeLayoutState extends State<HomeLayout>
   final List<Widget> _pages = [
     const HomeScreen(),
     EventScreen(),
-    const ProfileScreen(),
+    const UploadScreen(),
     const MessageScreen(),
     const SettingScreen(),
   ];
@@ -83,6 +84,43 @@ class _HomeLayoutState extends State<HomeLayout>
     );
   }
 
+  Widget _buildBottomNavigationBarAddItem({
+    required int index,
+    required BuildContext context,
+  }) {
+    final theme = Theme.of(context);
+    final bool isSelected = _selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Transform.translate(
+        offset: const Offset(0, -20), // Lift the button
+        child: Container(
+          height: 70,
+          width: 70,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.add,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withOpacity(0.6),
+            size: 36,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -123,8 +161,7 @@ class _HomeLayoutState extends State<HomeLayout>
                       icon: Icons.home, index: 0, context: context),
                   _buildBottomNavigationBarItem(
                       icon: Icons.search, index: 1, context: context),
-                  _buildBottomNavigationBarItem(
-                      icon: Icons.person, index: 2, context: context),
+                  _buildBottomNavigationBarAddItem(index: 2, context: context),
                   _buildBottomNavigationBarItem(
                       icon: Icons.message, index: 3, context: context),
                   _buildBottomNavigationBarItem(
