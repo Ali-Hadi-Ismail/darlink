@@ -23,7 +23,6 @@ Future<void> main() async {
     return prefs.getBool('isLoggedIn') ?? false;
   }
 
-  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await MongoDatabase.connect();
   bool loggedIn = await isLoggedIn();
