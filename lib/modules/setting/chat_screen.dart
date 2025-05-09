@@ -5,6 +5,8 @@ import 'package:darlink/shared/widgets/chat_widget/message_bubble.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:url_launcher/url_launcher.dart';
+
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
@@ -31,6 +33,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   late AnimationController _attachmentAnimationController;
   late Animation<double> _attachmentAnimation;
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri url = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   void initState() {
@@ -219,7 +230,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           actions: [
             IconButton(
               icon: const Icon(Icons.phone, color: Colors.white),
-              onPressed: () {},
+              onPressed: () {
+                _makePhoneCall('+96181932662');
+              },
             ),
             IconButton(
               icon: const Icon(Icons.videocam, color: Colors.white),

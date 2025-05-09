@@ -8,6 +8,10 @@ class NotificationScreen extends StatefulWidget {
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
+/*
+there is a notification provider / preference / service
+ let ahmad finish theme
+*/
 class _NotificationScreenState extends State<NotificationScreen> {
   bool generalNotifications = true;
   bool newPropertyAlerts = true;
