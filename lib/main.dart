@@ -14,6 +14,7 @@ import 'package:darlink/shared/cubit/app_state.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -22,6 +23,7 @@ Future<void> main() async {
     return prefs.getBool('isLoggedIn') ?? false;
   }
 
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await MongoDatabase.connect();
   bool loggedIn = await isLoggedIn();
