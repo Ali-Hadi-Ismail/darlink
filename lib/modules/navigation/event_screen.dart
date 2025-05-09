@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:darlink/constants/colors/app_color.dart';
 import 'package:darlink/modules/loading/event_load_screen.dart';
 import 'package:darlink/modules/upload/announce_event_screen.dart';
 import 'package:darlink/modules/detail/event_detail_screen.dart';
 import 'package:darlink/shared/widgets/card/event_card.dart';
+import 'package:darlink/shared/widgets/function.dart';
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 import 'package:darlink/constants/Database_url.dart' as mg;
@@ -113,9 +115,7 @@ class _EventScreenState extends State<EventScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: isDarkMode
-            ? theme.colorScheme.surface
-            : theme.colorScheme.primary.withOpacity(0.7),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.textTheme.headlineMedium?.color),
       ),
@@ -189,8 +189,8 @@ class _EventScreenState extends State<EventScreen> {
                                         Icon(Icons.calendar_today, size: 16),
                                         const SizedBox(width: 8),
                                         Text(
-                                          event['date']?.toString() ??
-                                              'No Date',
+                                          formatDateString(
+                                              event['date']?.toString()),
                                           style: theme.textTheme.bodyMedium,
                                         ),
                                       ],
