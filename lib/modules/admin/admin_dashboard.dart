@@ -1,6 +1,6 @@
 import 'package:darlink/client_view_page.dart';
 import 'package:darlink/editable_client_profile_page.dart';
-import 'package:darlink/modules/admin/editable_event_manager_profile_page.dart';
+
 import 'package:darlink/modules/admin/events_management_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -179,12 +179,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               icon: Icons.person_outline, // Client icon
                               label: 'Client Profile\n(View)',
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const ClientViewPage()),
-                                );
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ClientViewPage()));
                               },
                             ),
                             _buildProfileButton(
@@ -217,20 +216,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                   MaterialPageRoute(
                                       builder: (context) =>
                                           EventManagerProfilePage()),
-                                );
-                              },
-                            ),
-                            _buildProfileButton(
-                              context,
-                              icon: Icons
-                                  .manage_accounts, // Event manager edit icon
-                              label: 'Event Mgr\nProfile (Edit)',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditableEventManagerProfilePage()),
                                 );
                               },
                             ),

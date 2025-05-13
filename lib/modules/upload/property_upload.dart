@@ -1,4 +1,5 @@
 import 'package:darlink/constants/app_theme_data.dart';
+import 'package:darlink/constants/database_url.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1185,7 +1186,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   Widget _buildSubmitButton(ColorScheme colorScheme) {
     return ElevatedButton(
       onPressed: () async {
-        int id = await mg.largest();
+        int id = await MongoDatabase.largest();
         id++;
 
         if (_validateForm()) {

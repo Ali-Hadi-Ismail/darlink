@@ -5,7 +5,7 @@ import 'package:darlink/modules/authentication/login_screen.dart' as lg;
 import 'package:flutter/material.dart';
 import 'package:darlink/constants/colors/app_color.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../constants/Database_url.dart' as mg;
+import '../../constants/Database_url.dart' as mg;
 
 var username = "";
 
@@ -38,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   final Property property = Property(
-    id: 0,
     title: "Green Valley Villa",
     price: 3200.00,
     address: "123 Eco Lane, Greenville",
@@ -47,11 +46,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bathrooms: 2,
     kitchens: 1,
     ownerName: "Ahmad Nasser",
-    lang: 0,
-    lat: 2,
     imageUrl: ["assets/images/building.jpg"],
     amenities: ["Solar Panels", "Rainwater Harvesting", "Organic Garden"],
-    interiorDetails: ["Bamboo Flooring", "Energy-Efficient Lighting"],
+    interiorDetails: ["white floor"],
+    lang: 3.1,
+    lat: 3.1,
+    id: -1,
   );
 
   @override

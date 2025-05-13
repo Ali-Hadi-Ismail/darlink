@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:darlink/constants/colors/app_color.dart';
+import 'package:darlink/constants/database_url.dart';
 import 'package:darlink/modules/profile_screen.dart';
 import 'package:darlink/shared/widgets/card/propertyCard.dart';
 import 'package:flutter/material.dart';
 import 'package:darlink/models/property.dart';
-
 import 'package:darlink/shared/widgets/filter_bottom.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lottie/lottie.dart';
@@ -33,7 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isLoading = true;
     });
-    final all_proprty_info = await mg.collect_info_properties();
+
+    final all_proprty_info = await MongoDatabase.collect_info_properties();
 
     if (all_proprty_info.isNotEmpty) {
       // Clear existing list
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
           title: info['Title']?.toString() ?? 'No Title',
           price: double.tryParse(info['Price']?.toString() ?? '') ?? 0.0,
           address: info['Address']?.toString() ?? 'null',
-          area: int.tryParse(info['area']?.toString() ?? '') ?? 0,
+          area: int.tryParse(info['Area']?.toString() ?? '') ?? 0,
           bedrooms: int.tryParse(info['Bedroom']?.toString() ?? '') ?? 0,
           bathrooms: int.tryParse(info['Bathroom']?.toString() ?? '') ?? 0,
           kitchens: int.tryParse(info['Kitchen']?.toString() ?? '') ?? 0,
@@ -214,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             ),
             child: const CircleAvatar(
               backgroundImage: AssetImage("assets/images/mounir.jpg"),

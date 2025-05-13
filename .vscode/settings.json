@@ -1,4 +1,20 @@
 {
-  "cSpell.words": ["Arabi", "cupertino", "Darlink", "imagenew", "Liban", "mounir", "Mouniro", "Mraisseh", "prefs", "salimshatila", "اكتشف", "الصناعة", "المنتجات"],
+  "cSpell.words": [
+    "Arabi",
+    "cupertino",
+    "Darlink",
+    "imagenew",
+    "Liban",
+    "mounir",
+    "Mouniro",
+    "Mraisseh",
+    "prefs",
+    "propertydata",
+    "salimshatila",
+    "whishlist",
+    "اكتشف",
+    "الصناعة",
+    "المنتجات"
+  ],
   "java.configuration.updateBuildConfiguration": "interactive"
 }

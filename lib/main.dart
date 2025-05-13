@@ -28,7 +28,7 @@ Future<void> main() async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
-  await MongoDatabase.connect();
+  // await MongoDatabase.connect();
   bool loggedIn = await isLoggedIn();
   runApp(DarLinkApp(isLoggedIn: loggedIn));
 }
@@ -50,7 +50,9 @@ class DarLinkApp extends StatelessWidget {
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: ThemeMode.light,
-            home: MessageScreen(),
+            home: SplashScreen(
+              isLoggedIn: isLoggedIn,
+            ),
             //home: SplashScreen(isLoggedIn: isLoggedIn),
           );
         },

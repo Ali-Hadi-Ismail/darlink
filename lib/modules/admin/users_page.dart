@@ -14,11 +14,11 @@ class _UsersPageState extends State<UsersPage> {
   List<User> users = [
     User(
       id: '1',
-      username: 'John Doe',
       email: 'john.doe@example.com',
       role: 'Admin',
       avatarUrl: 'assets/images/black.png',
       joinDate: '2025-01-15',
+      username: 'johndoe',
     ),
     User(
       id: '2',

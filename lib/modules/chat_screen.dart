@@ -16,11 +16,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode();
-  bool _isRecording = false;
-  Duration _recordingDuration = Duration.zero;
-  Timer? _recordingTimer;
+
   bool _showAttachmentOptions = false;
   Contact contact = Contact(
     name: 'Ervin Crouse',
@@ -44,22 +40,32 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     return GestureDetector(
       onTap: () {},
-      child: Scaffold(
-        backgroundColor: theme.colorScheme.background,
-        appBar: _chatAppBar(theme, context),
-        body: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Stack(
-            children: [
-              ListView(),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: _buildBottomTyping(context, theme),
-              ),
-            ],
+      child: Stack(
+        children: [
+          Image.asset(
+            'assets/images/message_background.png',
+            fit: BoxFit.cover,
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
           ),
-        ),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: _chatAppBar(theme, context),
+            body: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Stack(
+                children: [
+                  ListView(),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _buildBottomTyping(context, theme),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

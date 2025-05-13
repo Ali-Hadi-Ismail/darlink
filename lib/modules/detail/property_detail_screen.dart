@@ -11,6 +11,7 @@ import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 import '../../constants/Database_url.dart' as mg;
 import '../authentication/login_screen.dart';
+import '../authentication/login_screen.dart' as lg;
 
 class PropertyDetailsScreen extends StatefulWidget {
   final Property property;
@@ -425,7 +426,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
 
             // Find user document
             var user =
-                await collection.findOne(mongo.where.eq('name', username));
+                await collection.findOne(mongo.where.eq('name', lg.username));
 
             if (user != null) {
               if (isSaved) {

@@ -1,6 +1,8 @@
 import 'dart:ffi';
 
+import 'package:darlink/models/user_model.dart';
 import 'package:darlink/modules/navigation/home_screen.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
@@ -18,36 +20,72 @@ class MongoDatabase {
     var db = await Db.create(mongo_url);
     await db.open();
   }
-}
 
-Future<String> collect_user_info() async {
-  var db = await mongo.Db.create(mg.mongo_url);
-  await db.open();
-  var collection = db.collection("user");
-  var userDoc =
-      collection.findOne(mongo.where.eq("Email", lg.usermail)).toString();
+  static Future<String> collect_user_info() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("user");
+    var userDoc =
+        collection.findOne(mongo.where.eq("Email", lg.usermail)).toString();
 
-  return userDoc;
-}
+    return userDoc;
+  }
 
-Future<List<Map<String, dynamic>>> collect_info_properties() async {
-  var db = await mongo.Db.create(mg.mongo_url);
-  await db.open();
-  var collection = db.collection("Property");
-  var propertydata = await collection.find().toList();
+  static Future<List<Map<String, dynamic>>> collect_info_properties() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("Property");
+    var propertydata =
+        await collection.find(where.eq('Approve', true)).toList();
+    return propertydata;
+  }
 
-  return propertydata;
-}
+  static dynamic collect_info_properties_admin() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("Property");
+    var propertydata = await collection.find().toList();
+    return propertydata;
+  }
 
-Future<int> largest() async {
-  var db = await mongo.Db.create(mg.mongo_url);
-  await db.open();
-  var collection = db.collection("Property");
-  var largest_id_table =
-      await collection.findOne(where.sortBy("id", descending: true));
-  largest_id = (largest_id_table?['id'] as Int64).toInt();
-  largest_id -= test;
-  test++;
-  print(largest_id);
-  return largest_id;
+  static Future<List<Map<String, dynamic>>>
+      collect_info_properties_whishlist() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    try {
+      await db.open();
+      var collection = db.collection("Property");
+      var userCollection = db.collection("user");
+
+      // Find the user
+      var specificUser = await userCollection
+          .findOne(mongo.where.eq("Email", "salimshatila21@gmail.com"));
+
+      // Get whishlist IDs
+      var whishlistIds = specificUser?["whishlist"];
+
+      var whishlist = await collection.find({
+        "ID": {"\$in": whishlistIds}
+      }).toList();
+
+      print(whishlist.toString());
+      print(
+          "---------------------------------------------------------------------");
+
+      return whishlist;
+    } finally {
+      await db.close();
+    }
+  }
+
+  static Future<int> largest() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("Property");
+    var largest_id_table =
+        await collection.findOne(where.sortBy("ID", descending: true));
+
+    largest_id = largest_id_table?['ID'] as int? ?? 1;
+
+    return largest_id;
+  }
 }
