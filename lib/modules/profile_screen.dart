@@ -38,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   final Property property = Property(
+    id: 0,
     title: "Green Valley Villa",
     price: 3200.00,
     address: "123 Eco Lane, Greenville",
@@ -46,7 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bathrooms: 2,
     kitchens: 1,
     ownerName: "Ahmad Nasser",
-    imageUrl: "assets/images/building.jpg",
+    lang: 0,
+    lat: 2,
+    imageUrl: ["assets/images/building.jpg"],
     amenities: ["Solar Panels", "Rainwater Harvesting", "Organic Garden"],
     interiorDetails: ["Bamboo Flooring", "Energy-Efficient Lighting"],
   );

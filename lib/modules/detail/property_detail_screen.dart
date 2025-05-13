@@ -1,9 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:darlink/models/property.dart';
-import 'package:darlink/modules/transaction_screen.dart';
 import 'package:darlink/shared/widgets/map/Virtual_tour.dart';
 import 'package:darlink/shared/widgets/map/map_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+
+import '../../constants/Database_url.dart' as mg;
+import '../authentication/login_screen.dart';
 
 class PropertyDetailsScreen extends StatefulWidget {
   final Property property;
@@ -12,12 +19,33 @@ class PropertyDetailsScreen extends StatefulWidget {
     super.key,
     required this.property,
   });
+  void main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await initializePropertyDatabase();
+    runApp(_PropertyDetailsScreenState() as Widget);
+  }
 
   @override
   _PropertyDetailsScreenState createState() => _PropertyDetailsScreenState();
+
+  Future<void> initializePropertyDatabase() async {
+    var db = await mongo.Db.create(mg.mongo_url);
+    await db.open();
+    var collection = db.collection("user");
+    var user_table = collection.findOne(mongo.where.eq('user', username));
+  }
 }
 
 class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
+  Image base64ToImage(String base64String) {
+    return Image.memory(
+      base64.decode(base64String.startsWith('data:image')
+          ? base64String.split(',').last
+          : base64String),
+      errorBuilder: (_, __, ___) => const Icon(Icons.error),
+    );
+  }
+
   bool amenitiesExpanded = false;
   bool interiorExpanded = false;
   bool constructionExpanded = false;
@@ -81,7 +109,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
               () => setState(() => interiorExpanded = !interiorExpanded),
             ),
             _buildLocationSection(theme, colors, textTheme),
-            _buildTransactionButton(theme, colors, context),
+            _buildSaveButton(theme, colors),
             const SizedBox(height: 24),
           ],
         ),
@@ -116,8 +144,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   const BorderRadius.vertical(top: Radius.circular(12)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.asset(
-                  widget.property.imageUrl,
+                child: Image.memory(
+                  base64Decode(widget.property.imageUrl[0]),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: colors.surfaceVariant,
@@ -367,7 +395,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   ),
                   child: GoogleMap(
                     initialCameraPosition: CameraPosition(
-                      target: const LatLng(37.4223, -122.0848),
+                      target: LatLng(widget.property.lat as double,
+                          widget.property.lang as double),
                       zoom: 14,
                     ),
                     markers: {_marker}, // set of markers
@@ -381,18 +410,39 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 
-  Widget _buildTransactionButton(
-      ThemeData theme, ColorScheme colors, BuildContext context) {
+  Widget _buildSaveButton(ThemeData theme, ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TransactionScreen(),
-            ),
-          );
+        onPressed: () async {
+          try {
+            // Connect to database
+            var db = await mongo.Db.create(mg.mongo_url);
+            await db.open();
+            var collection = db.collection("user");
+            print('----------------------------------------------');
+            print(widget.property.id);
+
+            // Find user document
+            var user =
+                await collection.findOne(mongo.where.eq('name', username));
+
+            if (user != null) {
+              if (isSaved) {
+                await collection.update(
+                  mongo.where.eq('name', username),
+                  mongo.modify.push('whishlist', widget.property.id),
+                );
+              } else {
+                // Update UI state
+                setState(() => isSaved = !isSaved);
+              }
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${e.toString()}')),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: isSaved ? colors.secondary : colors.primary,
@@ -402,7 +452,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
           ),
         ),
         child: Text(
-          "Transaction",
+          isSaved ? 'PROPERTY SAVED' : 'SAVE THIS PROPERTY',
           style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colors.onPrimary,
@@ -411,10 +461,10 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       ),
     );
   }
-}
 
-final Marker _marker = Marker(
-  markerId: MarkerId('initialMarker'),
-  position: LatLng(37.4223, -122.0848),
-  infoWindow: InfoWindow(title: 'Marker Title'),
-);
+  final Marker _marker = Marker(
+    markerId: MarkerId('initialMarker'),
+    position: LatLng(37.4223, -122.0848),
+    infoWindow: InfoWindow(title: 'Marker Title'),
+  );
+}

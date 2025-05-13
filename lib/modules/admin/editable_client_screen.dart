@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Mock user data for demonstration - replace with actual user data retrieval
 User mockUser = User(
   id: 'client1',
-  name: 'Mouniro',
+  username: 'Mouniro',
   email: 'Mouniro@gmail.com',
   role: 'User',
   avatarUrl: 'assets/images/black.png', // Placeholder avatar
@@ -39,7 +39,7 @@ class _EditableClientProfilePageState extends State<EditableClientProfilePage> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: mockUser.name);
+    _nameController = TextEditingController(text: mockUser.username);
     _emailController = TextEditingController(text: mockUser.email);
 
     _oldPasswordController = TextEditingController();

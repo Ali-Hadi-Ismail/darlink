@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:darlink/constants/colors/app_color.dart';
+import 'package:darlink/modules/profile_screen.dart';
 import 'package:darlink/shared/widgets/card/propertyCard.dart';
 import 'package:flutter/material.dart';
 import 'package:darlink/models/property.dart';
-import 'package:darlink/modules/profile_screen.dart';
+
 import 'package:darlink/shared/widgets/filter_bottom.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lottie/lottie.dart';
@@ -39,17 +41,24 @@ class _HomeScreenState extends State<HomeScreen> {
       // Loop through each property info and create Property objects
       for (var info in all_proprty_info) {
         properties.add(Property(
-          title: info['Title'] ?? 'No Title',
-          price: info['price'] ?? 0,
-          address: "database akal", // replace with actual address if available
-          area: (info['area'] as Int64?)?.toInt() ?? 0,
-          bedrooms: (info['bathrooms'] as Int64?)?.toInt() ?? 0,
-          bathrooms: (info['bathrooms'] as Int64?)?.toInt() ?? 0,
-          kitchens: 1,
-          ownerName: info['ownerName'] ?? 'Owner',
-          imageUrl: "assets/images/building.jpg",
+          title: info['Title']?.toString() ?? 'No Title',
+          price: double.tryParse(info['Price']?.toString() ?? '') ?? 0.0,
+          address: info['Address']?.toString() ?? 'null',
+          area: int.tryParse(info['area']?.toString() ?? '') ?? 0,
+          bedrooms: int.tryParse(info['Bedroom']?.toString() ?? '') ?? 0,
+          bathrooms: int.tryParse(info['Bathroom']?.toString() ?? '') ?? 0,
+          kitchens: int.tryParse(info['Kitchen']?.toString() ?? '') ?? 0,
+          ownerName: info['ownerName']?.toString() ?? 'Owner',
+          imageUrl: info['Image'] as List<dynamic>,
           amenities: ["swim pool", "led light"],
+          lang: double.tryParse(
+                  info['location']?['latitude']?.toString() ?? '') ??
+              0.0,
+          lat: double.tryParse(
+                  info['location']?['longitude']?.toString() ?? '') ??
+              0.0,
           interiorDetails: ["white floor"],
+          id: int.tryParse(info['ID']?.toString() ?? '') ?? 0,
         ));
       }
     } else {
@@ -65,9 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 bathrooms: 2,
                 kitchens: 1,
                 ownerName: "Owner Name",
-                imageUrl: "assets/images/building.jpg",
+                imageUrl: ["assets/images/building.jpg"],
                 amenities: ["swim pool", "led light"],
                 interiorDetails: ["white floor"],
+                lang: 3.1,
+                lat: 3.1,
+                id: -1,
               ));
     }
 
@@ -202,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
             ),
             child: const CircleAvatar(
               backgroundImage: AssetImage("assets/images/mounir.jpg"),

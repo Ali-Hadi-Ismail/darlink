@@ -4,11 +4,13 @@ import 'package:darlink/editable_client_profile_page.dart';
 import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/admin/admin_dashboard.dart';
 import 'package:darlink/modules/admin/event_data.dart';
+import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:darlink/modules/intro_screens/splash_screen.dart';
 import 'package:darlink/modules/navigation/event_screen.dart';
-import 'package:darlink/modules/setting/chat_screen.dart';
+import 'package:darlink/modules/chat_screen.dart';
+import 'package:darlink/modules/navigation/message_screen.dart';
 import 'package:darlink/modules/transaction_screen.dart';
 import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
@@ -42,15 +44,18 @@ class DarLinkApp extends StatelessWidget {
       child: BlocBuilder<AppCubit, AppCubitState>(
         builder: (context, state) {
           return MaterialApp(
-            key: UniqueKey(),
-            title: 'Darlink',
-            debugShowCheckedModeBanner: false,
-            theme: AppThemeData.lightTheme,
-            darkTheme: AppThemeData.darkTheme,
-            themeMode: ThemeMode.light,
-            home: HomeLayout(),
-            //home: SplashScreen(isLoggedIn: isLoggedIn),
-          );
+              key: UniqueKey(),
+              title: 'Darlink',
+              debugShowCheckedModeBanner: false,
+              theme: AppThemeData.lightTheme,
+              darkTheme: AppThemeData.darkTheme,
+              themeMode: ThemeMode.light,
+              home: ForgotPasswordWithEmail(
+                email: "dasf",
+                username: "",
+              )
+              //home: SplashScreen(isLoggedIn: isLoggedIn),
+              );
         },
       ),
     );

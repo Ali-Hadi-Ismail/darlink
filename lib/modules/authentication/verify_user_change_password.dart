@@ -1,47 +1,38 @@
 import 'dart:developer';
-import 'dart:math';
 
-import 'package:darlink/layout/home_layout.dart';
 import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import '../../constants/Database_url.dart' as mg;
 import '../../constants/database_url.dart';
 import '../../constants/colors/app_color.dart';
 import 'package:email_otp/email_otp.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class EmailVerificationScreen extends StatefulWidget {
+  const EmailVerificationScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false;
   bool _isLoading = false;
   bool _otpSent = false;
   String? _otpError;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+
   String? _usernameError;
   String? _emailError;
-  String? _passwordError;
-  String? _phoneError;
 
   bool _hasStartedTypingUsername = false;
   bool _hasStartedTypingEmail = false;
-  bool _hasStartedTypingPassword = false;
-  bool _hasStartedTypingPhoneNumber = false;
-  bool exists_name = false;
-  bool exists_email = false;
+  bool _userExists = false;
 
   EmailOTP myauth = EmailOTP();
 
@@ -60,7 +51,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _usernameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     _otpController.dispose();
     super.dispose();
   }
@@ -70,8 +60,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
   }
 
+  // Check if user exists in database
+  Future<bool> _checkUserExists() async {
+    if (_emailController.text.isEmpty || _usernameController.text.isEmpty) {
+      return false;
+    }
+
+    try {
+      // Connect to the database
+      var db = await mongo.Db.create(mongo_url);
+      await db.open();
+      inspect(db);
+      var collection = db.collection('user');
+
+      // Check if the user exists with the provided email and username
+      final user = await collection.findOne(
+        mongo.where
+            .eq('Email', _emailController.text)
+            .eq('name', _usernameController.text),
+      );
+
+      // Close database connection
+      await db.close();
+
+      return user != null;
+    } catch (e) {
+      print("Database error: $e");
+      return false;
+    }
+  }
+
   Future<void> _sendOTP() async {
-    if (_emailError != null || _emailController.text.isEmpty) {
+    if (_emailError != null ||
+        _emailController.text.isEmpty ||
+        _usernameError != null ||
+        _usernameController.text.isEmpty) {
       return;
     }
 
@@ -79,7 +102,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoading = true;
     });
 
-    // Keep your original OTP sending logic
+    // First check if user exists in database
+    _userExists = await _checkUserExists();
+
+    if (!_userExists) {
+      setState(() {
+        _isLoading = false;
+        _emailError = 'No account found with this email and username';
+      });
+      return;
+    }
+
+    // Send OTP
     bool result = await EmailOTP.sendOTP(
       email: _emailController.text,
     );
@@ -91,146 +125,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!result) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send OTP')),
+        const SnackBar(content: Text('Failed to send verification code')),
       );
     }
   }
 
-  Future<void> _validateAndRegister() async {
-    exists_name = false;
-    exists_email = false;
-
-    // First validate all fields
-    if (_usernameController.text.isEmpty) {
+  Future<void> _verifyAndProceed() async {
+    // Check if OTP is valid
+    if (_otpController.text.isEmpty) {
       setState(() {
-        _usernameError = 'Username cannot be empty';
-      });
-      return;
-    } else if (_usernameController.text.length < 6) {
-      setState(() {
-        _usernameError = 'Username must be at least 6 characters';
+        _otpError = 'Please enter verification code';
       });
       return;
     }
 
-    if (_emailController.text.isEmpty) {
-      setState(() {
-        _emailError = 'Email cannot be empty';
-      });
-      return;
-    } else if (!_isValidEmailFormat(_emailController.text)) {
-      setState(() {
-        _emailError = 'Enter a valid email';
-      });
-      return;
-    }
-
-    if (_passwordController.text.isEmpty) {
-      setState(() {
-        _passwordError = 'Password cannot be empty';
-      });
-      return;
-    }
-
-    // Check if OTP is verified (using your original logic)
-    if (_otpSent) {
-      if (_otpController.text.isEmpty) {
-        setState(() {
-          _otpError = 'Please enter OTP';
-        });
-        return;
-      }
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      bool isVerified = EmailOTP.verifyOTP(otp: _otpController.text);
-
-      setState(() {
-        _isLoading = false;
-        _otpError = isVerified ? null : 'Invalid OTP';
-      });
-
-      if (!isVerified) {
-        return;
-      }
-    } else {
-      setState(() {
-        _emailError = 'Please send OTP first';
-      });
-      return;
-    }
-
-    // Show loading indicator
     setState(() {
       _isLoading = true;
     });
 
-    try {
-      // Check if username/email exists in database
-      var db = await mongo.Db.create(mongo_url);
-      await db.open();
-      inspect(db);
-      var collection = db.collection('user');
+    bool isVerified = EmailOTP.verifyOTP(otp: _otpController.text);
 
-      final result_name = await collection
-          .findOne(mongo.where.eq('name', _usernameController.text));
-      if (result_name != null) {
-        exists_name = true;
-      }
-
-      final result_email = await collection
-          .findOne(mongo.where.eq('Email', _emailController.text));
-      if (result_email != null) {
-        exists_email = true;
-      }
-
-      setState(() {
-        if (exists_name) {
-          _usernameError = 'Username already exists';
-        }
-        if (exists_email) {
-          _emailError = 'Email already exists';
-        }
-        _isLoading = false;
-      });
-
-      if (exists_name || exists_email) {
-        return;
-      }
-
-      // All validations passed - register user
-      print("Registration Successful");
-      await collection.insert({
-        'name': _usernameController.text,
-        'Password': _passwordController.text,
-        'Email': _emailController.text,
-        'whishlist': [0]
-      });
-
-      // Close database connection
-      await db.close();
-
-      // Navigate to login screen
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
-    } catch (e) {
-      // Handle connection or database errors
+    if (!isVerified) {
       setState(() {
         _isLoading = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Connection error. Please try again later.'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        _otpError = 'Invalid verification code';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    // If verification is successful, navigate to forgot password screen
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ForgotPasswordWithEmail(
+            email: _emailController.text,
+            username: _usernameController.text,
           ),
-        );
-      });
-      print("Database error: $e");
+        ),
+      );
     }
   }
 
@@ -246,7 +183,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final onSurfaceColor =
         isDarkMode ? AppColors.textOnDark : colorScheme.onSurface;
     final secondaryColor = AppColors.secondary;
-    final errorColor = colorScheme.error;
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -271,9 +207,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Register',
+                  'Verify Email',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Enter your username and email to verify your identity',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: onSurfaceColor.withOpacity(0.7),
                     fontFamily: 'Poppins',
                   ),
                   textAlign: TextAlign.center,
@@ -285,7 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _usernameController,
                   label: 'Username',
                   icon: FontAwesomeIcons.user,
-                  iconColor: primaryColor,
+                  iconColor: Colors.deepPurple,
                   hintText: 'Enter your username',
                   errorText: _hasStartedTypingUsername ? _usernameError : null,
                   onChanged: (value) {
@@ -304,28 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 15),
-                _buildTextField(
-                  controller: _phoneController,
-                  label: 'Phone Number',
-                  icon: FontAwesomeIcons.phone,
-                  keyboardType: TextInputType.phone,
-                  iconColor: Colors.red,
-                  hintText: 'Enter your Phone Number',
-                  errorText:
-                      _hasStartedTypingPhoneNumber ? _usernameError : null,
-                  onChanged: (value) {
-                    setState(() {
-                      if (value.isEmpty) {
-                        _phoneError = 'Phone Number cannot be empty';
-                      } else if (value.length < 8) {
-                        _phoneError = 'Please enter a valid Phone Number';
-                      } else {
-                        _phoneError = null;
-                      }
-                    });
-                  },
-                ),
-                const SizedBox(height: 15),
+
                 // Email Field
                 _buildTextField(
                   controller: _emailController,
@@ -352,6 +276,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ? TextButton(
                           onPressed: _emailError == null &&
                                   _emailController.text.isNotEmpty &&
+                                  _usernameError == null &&
+                                  _usernameController.text.isNotEmpty &&
                                   !_isLoading
                               ? _sendOTP
                               : null,
@@ -365,7 +291,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Send OTP',
+                                  'Send Code',
                                   style: TextStyle(color: secondaryColor),
                                 ),
                         )
@@ -382,10 +308,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       _buildTextField(
                         controller: _otpController,
-                        label: 'OTP',
+                        label: 'Verification Code',
                         icon: FontAwesomeIcons.key,
-                        iconColor: Colors.blue,
-                        hintText: 'Enter 6-digit OTP',
+                        iconColor: Colors.green,
+                        hintText: 'Enter verification code',
                         keyboardType: TextInputType.number,
                         errorText: _otpError,
                         onChanged: (value) {
@@ -394,83 +320,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           });
                         },
                       ),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: 30),
+
+                      // Verify Button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _verifyAndProceed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: secondaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: _isLoading
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: onSurfaceColor,
+                                ),
+                              )
+                            : Text(
+                                'Verify & Continue',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                      ),
                     ],
                   ),
 
-                // Password Field
-                _buildTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  icon: FontAwesomeIcons.lock,
-                  iconColor: Colors.purple,
-                  hintText: 'Enter your password',
-                  obscureText: !_isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: onSurfaceColor.withOpacity(0.7),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
-                  errorText: _hasStartedTypingPassword ? _passwordError : null,
-                  onChanged: (value) {
-                    setState(() {
-                      _hasStartedTypingPassword = true;
-
-                      if (value.isEmpty) {
-                        _passwordError = 'Password cannot be empty';
-                      } else {
-                        _passwordError = null;
-                      }
-                    });
-                  },
-                ),
-                const SizedBox(height: 30),
-
-                // Register Button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _validateAndRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: secondaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: _isLoading
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: onSurfaceColor,
-                          ),
-                        )
-                      : Text(
-                          'Register',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                ),
+                // Navigation Options
                 const SizedBox(height: 20),
-
-                // Login Text
                 GestureDetector(
                   onTap: _isLoading
                       ? null
                       : () {
-                          // Navigate to Login Page
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -479,7 +368,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                   child: RichText(
                     text: TextSpan(
-                      text: "Already have an account? ",
+                      text: "Remember your password? ",
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: onSurfaceColor.withOpacity(0.8),
                       ),
@@ -497,7 +386,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
               ],
             ),
           ),
@@ -539,7 +427,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       keyboardType: keyboardType,
       onChanged: onChanged,
       autocorrect: false,
-      autofocus: false, // Set to false to prevent autofocus
+      autofocus: false,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(

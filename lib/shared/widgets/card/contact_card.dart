@@ -1,8 +1,10 @@
-import 'package:darlink/modules/setting/chat_screen.dart';
+import 'package:darlink/models/chat.dart';
+import 'package:darlink/modules/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 class ContactCard extends StatelessWidget {
-  const ContactCard({super.key});
+  ContactCard({required this.chatMessage, super.key});
+  Chat chatMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +58,13 @@ class ContactCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Robert Fox",
+                    chatMessage.name,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "Okay, take care dear",
+                    chatMessage.currentMessage,
                     style: theme.textTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -73,7 +75,7 @@ class ContactCard extends StatelessWidget {
             Column(
               children: [
                 Text(
-                  "12:30 AM",
+                  chatMessage.time,
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),

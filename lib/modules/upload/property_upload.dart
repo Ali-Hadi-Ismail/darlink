@@ -4,6 +4,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:darlink/constants/colors/app_color.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import 'dart:convert';
+import '../../constants/Database_url.dart' as mg;
 
 void main() => runApp(MaterialApp(
       theme: AppThemeData.lightTheme,
@@ -124,6 +127,13 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
     try {
       final List<XFile> pickedFiles = await _picker.pickMultiImage();
       if (pickedFiles.isNotEmpty) {
+        List<String> base64Images = [];
+        for (var file in pickedFiles) {
+          List<int> imageBytes = await File(file.path).readAsBytes();
+          String base64String = base64Encode(imageBytes);
+          base64Images.add(base64String);
+        }
+
         setState(() {
           _imageFiles
               .addAll(pickedFiles.map((file) => File(file.path)).toList());
@@ -135,6 +145,27 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
         SnackBar(content: Text('Error picking images: $e')),
       );
     }
+  }
+
+  Future<List<String>> _convertImageFilesToBase64(List<File> imageFiles) async {
+    final List<String> base64Strings = [];
+
+    for (final file in imageFiles) {
+      try {
+        // Read the file as bytes
+        final bytes = await file.readAsBytes();
+
+        // Convert bytes to base64 string
+        final base64String = base64Encode(bytes);
+        base64Strings.add(base64String);
+      } catch (e) {
+        debugPrint('Error converting image to base64: $e');
+        // You can choose to add a placeholder or skip the file
+        base64Strings.add(''); // Empty string as placeholder
+      }
+    }
+
+    return base64Strings;
   }
 
   void _removeImage(int index) {
@@ -1153,9 +1184,33 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
 
   Widget _buildSubmitButton(ColorScheme colorScheme) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
+        int id = await mg.largest();
+        id++;
+
         if (_validateForm()) {
-          // Here you would typically save the data and upload images
+          var db = await mongo.Db.create(mg.mongo_url);
+          await db.open();
+          var collection = db.collection("Property");
+          await collection.insert({
+            'Title': titleController.text,
+            'Address': addressController.text,
+            'Property_type': propertyTypes.toString(),
+            'Price': priceController.text,
+            'Bedroom': bedroomsController.text,
+            'Bathroom': bathroomsController.text,
+            'Kitchen': kitchensController.text,
+            'Amenities': amenities.toString(),
+            'Interior_details': interiorDetails.toString(),
+            'location': {
+              'latitude': selectedLocation!.latitude,
+              'longitude': selectedLocation!.longitude,
+            },
+            'Image': await _convertImageFilesToBase64(_imageFiles),
+            'ID': id,
+            'Area': areaController,
+            'Admit': false
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Property successfully uploaded!'),

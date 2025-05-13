@@ -14,7 +14,7 @@ class _UsersPageState extends State<UsersPage> {
   List<User> users = [
     User(
       id: '1',
-      name: 'John Doe',
+      username: 'John Doe',
       email: 'john.doe@example.com',
       role: 'Admin',
       avatarUrl: 'assets/images/black.png',
@@ -22,7 +22,7 @@ class _UsersPageState extends State<UsersPage> {
     ),
     User(
       id: '2',
-      name: 'Jane Smith',
+      username: 'Jane Smith',
       email: 'jane.smith@example.com',
       role: 'Seller',
       avatarUrl: 'assets/images/black.png',
@@ -30,7 +30,7 @@ class _UsersPageState extends State<UsersPage> {
     ),
     User(
       id: '3',
-      name: 'Robert Johnson',
+      username: 'Robert Johnson',
       email: 'robert.johnson@example.com',
       role: 'User',
       avatarUrl: 'assets/images/black.png',
@@ -312,7 +312,7 @@ class _UsersPageState extends State<UsersPage> {
   void _showUserForm(User? user) {
     final isEditing = user != null;
     final nameController =
-        TextEditingController(text: isEditing ? user.name : '');
+        TextEditingController(text: isEditing ? user.username : '');
     final emailController =
         TextEditingController(text: isEditing ? user.email : '');
     final roleController =
@@ -435,7 +435,7 @@ class _UsersPageState extends State<UsersPage> {
                 id: isEditing
                     ? user.id
                     : DateTime.now().millisecondsSinceEpoch.toString(),
-                name: nameController.text,
+                username: nameController.text,
                 email: emailController.text,
                 role: roleController.text,
                 avatarUrl: avatarUrlController.text,
@@ -552,7 +552,7 @@ class UserCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.name,
+                          user.username,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:darlink/models/property.dart';
 import 'package:darlink/modules/detail/property_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -39,8 +41,8 @@ class PropertyCard extends StatelessWidget {
               // Property Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  property.imageUrl,
+                child: Image.memory(
+                  base64Decode(property.imageUrl[0]),
                   fit: BoxFit.cover,
                   width: 100,
                   height: 100,

@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
+import 'package:darlink/modules/authentication/verify_user_change_password.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
@@ -277,7 +279,40 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 const SizedBox(height: 15),
-
+                GestureDetector(
+                  onTap: _isLoading
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const EmailVerificationScreen()),
+                          );
+                        },
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Forget Password? ",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: onSurfaceColor.withOpacity(0.8),
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "Change Password",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
                 // Register Text
                 GestureDetector(
                   onTap: _isLoading
@@ -310,6 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 10),
               ],
             ),
           ),

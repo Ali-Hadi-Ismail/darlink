@@ -1,9 +1,39 @@
-import 'package:darlink/modules/setting/chat_screen.dart';
+import 'package:darlink/models/chat.dart';
+import 'package:darlink/modules/chat_screen.dart';
 import 'package:darlink/shared/widgets/card/contact_card.dart';
 import 'package:flutter/material.dart';
 
-class MessageScreen extends StatelessWidget {
+class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
+
+  @override
+  State<MessageScreen> createState() => _MessageScreenState();
+}
+
+class _MessageScreenState extends State<MessageScreen> {
+  List<Chat> chats = [
+    Chat(
+      name: "Robert Fox",
+      icon: "assets/images/robert.png",
+      isGroup: "false",
+      time: "2:30 PM",
+      currentMessage: "Hello, how are you?",
+    ),
+    Chat(
+      name: "Kristin Watson",
+      icon: "assets/images/kristin.png",
+      isGroup: "false",
+      time: "1:45 PM",
+      currentMessage: "Are you coming to the party?",
+    ),
+    Chat(
+      name: "Cody Fisher",
+      icon: "assets/images/cody.png",
+      isGroup: "false",
+      time: "12:00 PM",
+      currentMessage: "Let's catch up later.",
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -22,26 +52,14 @@ class MessageScreen extends StatelessWidget {
         centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: theme.colorScheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
       body: Column(
         children: [
           _buildSearchRow(context),
-          const SizedBox(height: 10),
           Expanded(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  ContactCard(),
-                  ContactCard(),
-                  ContactCard(),
-                  ContactCard(),
-                ],
-              ),
+            child: ListView.builder(
+              itemCount: chats.length,
+              itemBuilder: (context, index) =>
+                  ContactCard(chatMessage: chats[index]),
             ),
           ),
         ],
