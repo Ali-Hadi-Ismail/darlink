@@ -274,13 +274,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   },
                   suffixIcon: !_otpSent
                       ? TextButton(
-                          onPressed: _emailError == null &&
-                                  _emailController.text.isNotEmpty &&
-                                  _usernameError == null &&
-                                  _usernameController.text.isNotEmpty &&
-                                  !_isLoading
-                              ? _sendOTP
-                              : null,
+                          onPressed: (_emailError == null ||
+                                  _emailController.text.isNotEmpty ||
+                                  _usernameError == null ||
+                                  _usernameController.text.isNotEmpty ||
+                                  !_isLoading)
+                              ? null
+                              : _sendOTP,
                           child: _isLoading && !_otpSent
                               ? SizedBox(
                                   height: 20,
