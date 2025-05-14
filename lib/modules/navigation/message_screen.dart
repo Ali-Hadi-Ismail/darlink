@@ -1,5 +1,6 @@
 import 'package:darlink/models/chat.dart';
 import 'package:darlink/modules/chat_screen.dart';
+import 'package:darlink/shared/services/chat_service.dart';
 import 'package:darlink/shared/widgets/card/contact_card.dart';
 import 'package:flutter/material.dart';
 
@@ -11,29 +12,80 @@ class MessageScreen extends StatefulWidget {
 }
 
 class _MessageScreenState extends State<MessageScreen> {
-  List<Chat> chats = [
-    Chat(
-      name: "Robert Fox",
-      icon: "assets/images/robert.png",
-      isGroup: "false",
-      time: "2:30 PM",
-      currentMessage: "Hello, how are you?",
-    ),
-    Chat(
-      name: "Kristin Watson",
-      icon: "assets/images/kristin.png",
-      isGroup: "false",
-      time: "1:45 PM",
-      currentMessage: "Are you coming to the party?",
-    ),
-    Chat(
-      name: "Cody Fisher",
-      icon: "assets/images/cody.png",
-      isGroup: "false",
-      time: "12:00 PM",
-      currentMessage: "Let's catch up later.",
-    ),
-  ];
+  final ChatService _chatService = ChatService();
+  List<dynamic> _conversations = [];
+  List<dynamic> _filteredConversations = [];
+  bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _initChatService();
+    _searchController.addListener(_filterConversations);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_filterConversations);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterConversations() {
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _filteredConversations = List.from(_conversations);
+      });
+    } else {
+      setState(() {
+        _filteredConversations = _conversations
+            .where((conversation) => conversation['email']
+                .toString()
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _initChatService() async {
+    // Ensure connection
+    if (!_chatService.isConnected) {
+      await _chatService.connect();
+    }
+
+    // Add listener for conversations updates
+    _chatService.addConversationsListener(_updateConversations);
+
+    // Request recent conversations
+    _chatService.getRecentConversations();
+
+    // Add listener for new messages to update the list
+    _chatService.addNewMessageListener(_onNewMessage);
+  }
+
+  void _updateConversations(List<dynamic> conversations) {
+    setState(() {
+      _conversations = conversations;
+      _filteredConversations = List.from(conversations);
+      _isLoading = false;
+    });
+  }
+
+  void _onNewMessage(String sender, String content, DateTime timestamp) {
+    // Update conversations list when a new message is received
+    _chatService.getRecentConversations();
+  }
+
+  void _navigateToChat(String email) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(userEmail: email),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,23 +100,63 @@ class _MessageScreenState extends State<MessageScreen> {
           style: theme.textTheme.headlineMedium
               ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: theme.colorScheme.primary, // Green app bar
+        backgroundColor: theme.colorScheme.primary,
         centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
           _buildSearchRow(context),
-          Expanded(
-            child: ListView.builder(
-              itemCount: chats.length,
-              itemBuilder: (context, index) =>
-                  ContactCard(chatMessage: chats[index]),
-            ),
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _filteredConversations.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          _searchController.text.isNotEmpty
+                              ? "No conversations match your search"
+                              : "No conversations yet",
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                    )
+                  : Expanded(
+                      child: ListView.builder(
+                        itemCount: _filteredConversations.length,
+                        itemBuilder: (context, index) {
+                          final conversation = _filteredConversations[index];
+                          return ContactCard(
+                            email: conversation['email'],
+                            lastMessage: conversation['lastMessage'] ??
+                                "No messages yet",
+                            time: _formatDateTime(
+                                DateTime.parse(conversation['timestamp'])),
+                            isOnline: _chatService
+                                    .onlineUsers[conversation['email']] ??
+                                false,
+                          );
+                        },
+                      ),
+                    ),
         ],
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (messageDate == today) {
+      return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+    } else if (messageDate == yesterday) {
+      return "Yesterday";
+    } else {
+      return "${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}";
+    }
   }
 
   Widget _buildSearchRow(BuildContext context) {
@@ -77,8 +169,9 @@ class _MessageScreenState extends State<MessageScreen> {
         children: [
           Expanded(
               child: TextFormField(
+            controller: _searchController,
             decoration: InputDecoration(
-              hintText: "Search ...",
+              hintText: "Search contacts...",
               hintStyle: TextStyle(
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               ),
@@ -92,6 +185,14 @@ class _MessageScreenState extends State<MessageScreen> {
                 Icons.search,
                 color: isDarkMode ? Colors.white : Colors.grey[600],
               ),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
             ),
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,

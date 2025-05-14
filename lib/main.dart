@@ -7,6 +7,7 @@ import 'package:darlink/modules/admin/event_data.dart';
 import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
+import 'package:darlink/modules/authentication/verify_user_change_password.dart';
 import 'package:darlink/modules/intro_screens/splash_screen.dart';
 import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/chat_screen.dart';
@@ -44,15 +45,15 @@ class DarLinkApp extends StatelessWidget {
       child: BlocBuilder<AppCubit, AppCubitState>(
         builder: (context, state) {
           return MaterialApp(
-              key: UniqueKey(),
-              title: 'Darlink',
-              debugShowCheckedModeBanner: false,
-              theme: AppThemeData.lightTheme,
-              darkTheme: AppThemeData.darkTheme,
-              themeMode: ThemeMode.light,
-              home: MessageScreen()
-              //home: SplashScreen(isLoggedIn: isLoggedIn),
-              );
+            key: UniqueKey(),
+            title: 'Darlink',
+            debugShowCheckedModeBanner: false,
+            theme: AppThemeData.lightTheme,
+            darkTheme: AppThemeData.darkTheme,
+            themeMode: ThemeMode.light,
+            //home: MessageScreen()
+            home: SplashScreen(isLoggedIn: isLoggedIn),
+          );
         },
       ),
     );
