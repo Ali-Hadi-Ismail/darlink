@@ -2,16 +2,22 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
+
 const server = http.createServer(app);
 const io = new Server(server, {
-  pingTimeout: 60000,
-  connectTimeout: 5000,
-  transports: ["websocket"],
   cors: {
     origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
   },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  transports: ["websocket", "polling"],
+  allowEIO3: true,
 });
 
 // MongoDB Connection
@@ -124,6 +130,7 @@ io.on("connection", (socket) => {
             email: partner,
             lastMessage: message.content,
             timestamp: message.timestamp,
+            // Add more user details if needed
           });
         }
       });
@@ -131,6 +138,7 @@ io.on("connection", (socket) => {
       // Convert Map to array and sort by timestamp
       const conversations = Array.from(conversationPartners.values()).sort((a, b) => b.timestamp - a.timestamp);
 
+      console.log("Sending conversations:", conversations); // Debug log
       socket.emit("recent_conversations", conversations);
     } catch (error) {
       console.error("Error fetching recent conversations:", error);
@@ -182,7 +190,14 @@ io.on("connection", (socket) => {
   });
 });
 
+// Add a basic route to test server
+app.get("/", (req, res) => {
+  res.send("Socket.io server is running");
+});
+
+// Modify the server listen
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`WebSocket server is ready for connections`);
 });

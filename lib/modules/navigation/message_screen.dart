@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:darlink/models/chat.dart';
 import 'package:darlink/modules/chat_screen.dart';
 import 'package:darlink/shared/services/chat_service.dart';
@@ -16,6 +18,7 @@ class _MessageScreenState extends State<MessageScreen> {
   List<dynamic> _conversations = [];
   List<dynamic> _filteredConversations = [];
   bool _isLoading = true;
+  bool _isError = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -39,38 +42,66 @@ class _MessageScreenState extends State<MessageScreen> {
       });
     } else {
       setState(() {
-        _filteredConversations = _conversations
-            .where((conversation) => conversation['email']
-                .toString()
-                .toLowerCase()
-                .contains(_searchController.text.toLowerCase()))
-            .toList();
+        _filteredConversations = _conversations.where((conversation) {
+          // Check if the conversation exists and has required fields
+          if (conversation == null) return false;
+
+          // Get the email and convert to lowercase for case-insensitive search
+          final email = conversation['email']?.toString().toLowerCase() ?? '';
+          final searchTerm = _searchController.text.toLowerCase();
+
+          // Check if email contains the search term
+          return email.contains(searchTerm);
+        }).toList();
       });
     }
   }
 
   Future<void> _initChatService() async {
-    // Ensure connection
-    if (!_chatService.isConnected) {
-      await _chatService.connect();
+    try {
+      // Ensure connection
+      if (!_chatService.isConnected) {
+        await _chatService.connect().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            throw TimeoutException('Connection timeout');
+          },
+        );
+      }
+
+      // Add listener for conversations updates
+      _chatService.addConversationsListener(_updateConversations);
+
+      // Request recent conversations
+      _chatService.getRecentConversations();
+
+      // Add listener for new messages to update the list
+      _chatService.addNewMessageListener(_onNewMessage);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isError = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to connect: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
-
-    // Add listener for conversations updates
-    _chatService.addConversationsListener(_updateConversations);
-
-    // Request recent conversations
-    _chatService.getRecentConversations();
-
-    // Add listener for new messages to update the list
-    _chatService.addNewMessageListener(_onNewMessage);
   }
 
   void _updateConversations(List<dynamic> conversations) {
-    setState(() {
-      _conversations = conversations;
-      _filteredConversations = List.from(conversations);
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _conversations = conversations;
+        _filteredConversations = List.from(conversations);
+        _isLoading = false;
+        _isError = false;
+      });
+    }
   }
 
   void _onNewMessage(String sender, String content, DateTime timestamp) {
@@ -108,37 +139,53 @@ class _MessageScreenState extends State<MessageScreen> {
         children: [
           _buildSearchRow(context),
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _filteredConversations.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+              ? const Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
+              : _isError
+                  ? const Expanded(
+                      child: Center(
                         child: Text(
-                          _searchController.text.isNotEmpty
-                              ? "No conversations match your search"
-                              : "No conversations yet",
-                          style: theme.textTheme.titleMedium,
+                          'Failed to load conversations\nPull to refresh',
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     )
-                  : Expanded(
-                      child: ListView.builder(
-                        itemCount: _filteredConversations.length,
-                        itemBuilder: (context, index) {
-                          final conversation = _filteredConversations[index];
-                          return ContactCard(
-                            email: conversation['email'],
-                            lastMessage: conversation['lastMessage'] ??
-                                "No messages yet",
-                            time: _formatDateTime(
-                                DateTime.parse(conversation['timestamp'])),
-                            isOnline: _chatService
-                                    .onlineUsers[conversation['email']] ??
-                                false,
-                          );
-                        },
-                      ),
-                    ),
+                  : _filteredConversations.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Text(
+                              _searchController.text.isNotEmpty
+                                  ? "No conversations match your search"
+                                  : "No conversations yet",
+                              style: theme.textTheme.titleMedium,
+                            ),
+                          ),
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                            itemCount: _filteredConversations.length,
+                            itemBuilder: (context, index) {
+                              final conversation =
+                                  _filteredConversations[index];
+                              return ContactCard(
+                                email: conversation['email'],
+                                lastMessage: conversation['lastMessage'] ??
+                                    "No messages yet",
+                                time: _formatDateTime(
+                                    DateTime.parse(conversation['timestamp'])),
+                                isOnline: _chatService
+                                        .onlineUsers[conversation['email']] ??
+                                    false,
+                              );
+                            },
+                          ),
+                        ),
         ],
       ),
     );

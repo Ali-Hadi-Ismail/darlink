@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:darlink/modules/authentication/forget_password.dart';
@@ -111,30 +112,45 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // Login successful
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-
-      // Store user info in SharedPreferences for chat service
-      await prefs.setString('userEmail', _emailController.text);
-      await prefs.setString('userName', userDocument['name'] as String);
-
-      // Store user info in globals
-      usermail = _emailController.text;
-      username = userDocument['name'] as String;
-
-      // Initialize chat service
-      final chatService = ChatService();
-      await chatService.connect();
-
-      // Close database connection
-      await db.close();
-
-      // Navigate to home screen
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeLayout()),
+      try {
+        // Initialize chat service before navigation
+        final chatService = ChatService();
+        await chatService.connect().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            throw TimeoutException('Connection timeout');
+          },
         );
+
+        // Store user info in SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', _emailController.text);
+        await prefs.setString('userName', userDocument['name'] as String);
+        await prefs.setBool('isLoggedIn', true);
+
+        // Store user info in globals
+        usermail = _emailController.text;
+        username = userDocument['name'] as String;
+
+        // Close database connection
+        await db.close();
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeLayout()),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Connection error: ${e.toString()}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        });
       }
     } catch (e) {
       // Handle connection or database errors
