@@ -1,11 +1,9 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:darlink/modules/authentication/verify_user_change_password.dart'
     hide AppColors;
-import 'package:darlink/shared/services/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
@@ -112,45 +110,22 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // Login successful
-      try {
-        // Initialize chat service before navigation
-        final chatService = ChatService();
-        await chatService.connect().timeout(
-          const Duration(seconds: 5),
-          onTimeout: () {
-            throw TimeoutException('Connection timeout');
-          },
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+
+      // Store user info
+      usermail = _emailController.text;
+      username = userDocument['name'] as String;
+
+      // Close database connection
+      await db.close();
+
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeLayout()),
         );
-
-        // Store user info in SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userEmail', _emailController.text);
-        await prefs.setString('userName', userDocument['name'] as String);
-        await prefs.setBool('isLoggedIn', true);
-
-        // Store user info in globals
-        usermail = _emailController.text;
-        username = userDocument['name'] as String;
-
-        // Close database connection
-        await db.close();
-
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeLayout()),
-          );
-        }
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Connection error: ${e.toString()}'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        });
       }
     } catch (e) {
       // Handle connection or database errors
@@ -410,8 +385,8 @@ class _LoginScreenState extends State<LoginScreen> {
       controller: controller,
       obscureText: obscureText,
       onChanged: onChanged,
-      autocorrect: false,
-      autofocus: false,
+      autocorrect: false, // Changed to false for passwords
+      autofocus: false, // Changed to false for better UX
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(

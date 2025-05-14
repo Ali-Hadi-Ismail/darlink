@@ -1,39 +1,54 @@
+import 'package:darlink/models/contact.dart';
 import 'package:darlink/models/message.dart';
-import 'package:darlink/shared/services/chat_service.dart';
 import 'package:darlink/shared/widgets/card/message/own_message_card.dart';
 import 'package:darlink/shared/widgets/card/message/reply_message_card.dart';
+import 'package:darlink/shared/widgets/chat_widget/attachment_option.dart';
+import 'package:darlink/shared/widgets/chat_widget/message_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'dart:async';
 
-class ChatScreen extends StatefulWidget {
-  final String userEmail;
+import 'package:url_launcher/url_launcher.dart';
 
-  const ChatScreen({
-    required this.userEmail,
-    super.key,
-  });
+class ChatScreen extends StatefulWidget {
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  final FocusNode _focusNode = FocusNode();
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  final ChatService _chatService = ChatService();
+  bool show = false;
+  FocusNode focusNode = FocusNode();
+
+  final TextEditingController _controller = TextEditingController();
 
   bool _showAttachmentOptions = false;
-  bool _isOnline = false;
-  List<Message> _messages = [];
+
+  late IO.Socket socket;
+  Contact contact = Contact(
+    name: 'Ervin Crouse',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+    isOnline: true,
+    typingStatus: null,
+  );
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri url = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _initChat();
-
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
+    connect();
+    focusNode.addListener(() {
+      super.initState();
+      if (focusNode.hasFocus) {
         setState(() {
           _showAttachmentOptions = false;
         });
@@ -41,72 +56,35 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _focusNode.dispose();
-    _scrollController.dispose();
-    // Remove the message listener when the chat screen is closed
-    _chatService.removeMessageListener(widget.userEmail, _onNewMessage);
-    super.dispose();
-  }
+  void connect() {
+    socket = IO.io(
+      "http://192.168.1.104:5000", // Replace X with your actual local IP
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .enableAutoConnect()
+          .enableForceNew()
+          .setTimeout(5000)
+          .build(),
+    );
 
-  void _initChat() {
-    // Ensure the chat service is connected
-    if (!_chatService.isConnected) {
-      _chatService.connect().then((_) => _setupChat());
-    } else {
-      _setupChat();
-    }
-  }
+    socket.connect();
 
-  void _setupChat() {
-    // Register this chat's message listener
-    _chatService.addMessageListener(widget.userEmail, _onNewMessage);
-
-    // Get chat history
-    _chatService.getChatHistory(widget.userEmail);
-
-    // Mark messages as read
-    _chatService.markMessagesAsRead(widget.userEmail);
-
-    // Check if user is online
-    setState(() {
-      _isOnline = _chatService.onlineUsers[widget.userEmail] ?? false;
+    socket.onConnect((data) {
+      print('Connected to socket server');
+      socket.emit("test", "Hello from Flutter");
     });
-  }
-
-  void _onNewMessage(Message message) {
-    setState(() {
-      _messages.add(message);
+    print(socket.connected);
+    socket.onConnectError((error) {
+      print('Connection error: $error');
     });
 
-    // Scroll to the bottom of the chat
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+    socket.onDisconnect((_) {
+      print('Disconnected from socket server');
     });
 
-    // If receiving a message, mark it as read
-    if (!message.isMe) {
-      _chatService.markMessagesAsRead(widget.userEmail);
-    }
-  }
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-
-    final message = _messageController.text.trim();
-    _chatService.sendMessage(widget.userEmail, message);
-    _messageController.clear();
-
-    // Return focus to input field
-    _focusNode.requestFocus();
+    socket.on("test", (data) {
+      print('Received test message: $data');
+    });
   }
 
   @override
@@ -114,7 +92,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () {},
       child: Stack(
         children: [
           Image.asset(
@@ -125,7 +103,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
           Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: _buildChatAppBar(theme, context),
+            appBar: _chatAppBar(theme, context),
             body: Container(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
@@ -133,29 +111,38 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 children: [
                   Container(
                     height: MediaQuery.of(context).size.height - 160,
-                    child: ListView.builder(
-                      controller: _scrollController,
+                    child: ListView(
                       reverse: true,
                       shrinkWrap: true,
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        return message.isMe
-                            ? OwnMessageCard(
-                                message: message.content,
-                                time: _formatTime(message.timestamp),
-                                status: message.status,
-                              )
-                            : ReplyMessageCard(
-                                message: message.content,
-                                time: _formatTime(message.timestamp),
-                              );
-                      },
+                      children: [
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                      ],
                     ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: _buildMessageInput(context, theme),
+                    child: _buildBottomTyping(context, theme),
                   ),
                 ],
               ),
@@ -166,11 +153,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  String _formatTime(DateTime dateTime) {
-    return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
-  }
-
-  AppBar _buildChatAppBar(ThemeData theme, BuildContext context) {
+  AppBar _chatAppBar(ThemeData theme, BuildContext context) {
     return AppBar(
       backgroundColor: theme.colorScheme.primary,
       leadingWidth: 40,
@@ -183,11 +166,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundColor: theme.colorScheme.secondary,
-            child: Text(
-              widget.userEmail[0].toUpperCase(),
-              style: const TextStyle(color: Colors.white),
-            ),
+            backgroundImage: NetworkImage(contact.avatarUrl),
             radius: 20,
           ),
           const SizedBox(width: 10),
@@ -195,15 +174,14 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.userEmail,
+                contact.name,
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
               Text(
-                _isOnline ? "Online" : "Offline",
+                "Last seen: 2 hours ago",
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: Colors.white,
                 ),
@@ -216,26 +194,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         IconButton(
           icon: const Icon(Icons.phone, color: Colors.white),
           onPressed: () {
-            // Implement call functionality if needed
+            _makePhoneCall('+96181932662');
           },
         ),
       ],
     );
   }
 
-  Widget _buildMessageInput(BuildContext context, ThemeData theme) {
+  Row _buildBottomTyping(BuildContext context, ThemeData theme) {
     return Row(
       children: [
         Container(
-          width: MediaQuery.of(context).size.width - 60,
+          width: MediaQuery.of(context).size.width - 55,
           child: Card(
             margin: const EdgeInsets.only(left: 10, right: 5, bottom: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
             child: TextFormField(
-              controller: _messageController,
-              focusNode: _focusNode,
               textAlignVertical: TextAlignVertical.center,
               keyboardType: TextInputType.multiline,
               maxLines: 5,
@@ -249,25 +225,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.camera_alt_outlined),
-                      onPressed: () {
-                        // Implement camera functionality
-                      },
+                      onPressed: () {},
                     ),
                     IconButton(
                       icon: const Icon(Icons.attach_file),
-                      onPressed: () {
-                        setState(() {
-                          _showAttachmentOptions = !_showAttachmentOptions;
-                          _focusNode.unfocus();
-                        });
-                      },
+                      onPressed: () {},
                     ),
                   ],
                 ),
                 prefixIcon: IconButton(
                   icon: const Icon(Icons.emoji_emotions_outlined),
                   onPressed: () {
-                    // Implement emoji selector
+                    setState(() {
+                      _showAttachmentOptions = !_showAttachmentOptions;
+                    });
                   },
                 ),
               ),
@@ -281,7 +252,14 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             backgroundColor: theme.colorScheme.primary,
             child: IconButton(
               icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: _sendMessage,
+              onPressed: () {
+                // Handle send button press
+                if (_controller.text.isNotEmpty) {
+                  setState(() {
+                    _controller.clear();
+                  });
+                }
+              },
             ),
           ),
         ),
