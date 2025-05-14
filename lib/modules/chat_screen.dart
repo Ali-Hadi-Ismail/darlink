@@ -18,13 +18,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  bool show = false;
-  FocusNode focusNode = FocusNode();
-
   final TextEditingController _controller = TextEditingController();
+  ScrollController _scrollController = ScrollController();
 
   bool _showAttachmentOptions = false;
-
+  bool show = false;
+  FocusNode focusNode = FocusNode();
+  bool sendButton = false;
+  List<Message> messages = [];
   late IO.Socket socket;
   Contact contact = Contact(
     name: 'Ervin Crouse',
@@ -45,46 +46,73 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    connect();
+
     focusNode.addListener(() {
-      super.initState();
       if (focusNode.hasFocus) {
         setState(() {
-          _showAttachmentOptions = false;
+          show = false;
         });
       }
     });
+    connect();
   }
+// In chat_screen.dart, replace the connect() method with this updated version:
 
   void connect() {
-    socket = IO.io(
-      "http://192.168.1.104:5000", // Replace X with your actual local IP
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .enableAutoConnect()
-          .enableForceNew()
-          .setTimeout(5000)
-          .build(),
-    );
+    // Try different connection approaches
+    try {
+      // Option 1: Use your computer's IP on your local network
+      // Change this to your actual IP address on your local network
+      final String serverUrl =
+          "http://10.0.2.2:5000"; // For Android emulator connecting to localhost
+      // Alternative IPs to try:
+      // "http://localhost:5000" - might work depending on your setup
+      // "http://127.0.0.1:5000" - localhost IP
+      // "http://YOUR_ACTUAL_IP:5000" - replace with your computer's IP on your network
 
-    socket.connect();
+      print("Attempting to connect to: $serverUrl");
 
-    socket.onConnect((data) {
-      print('Connected to socket server');
-      socket.emit("test", "Hello from Flutter");
-    });
-    print(socket.connected);
-    socket.onConnectError((error) {
-      print('Connection error: $error');
-    });
+      socket = IO.io(
+        serverUrl,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .enableAutoConnect()
+            .enableForceNew()
+            .setReconnectionAttempts(5)
+            .setReconnectionDelay(5000)
+            .setTimeout(10000) // Increase timeout to 10 seconds
+            .build(),
+      );
 
-    socket.onDisconnect((_) {
-      print('Disconnected from socket server');
-    });
+      socket.connect();
 
-    socket.on("test", (data) {
-      print('Received test message: $data');
-    });
+      socket.onConnect((_) {
+        print('Connected to socket server at $serverUrl');
+        socket.emit("test", "Hello from Flutter");
+      });
+
+      print("Socket connected status: ${socket.connected}");
+
+      socket.onConnectError((error) {
+        print('Connection error: $error');
+        // You could show a snackbar or alert here
+      });
+
+      socket.onDisconnect((_) {
+        print('Disconnected from socket server');
+      });
+
+      socket.on("test_response", (data) {
+        print('Received test response: $data');
+      });
+
+      // Add error handling for socket errors
+      socket.onError((error) {
+        print('Socket error: $error');
+      });
+    } catch (e) {
+      print('Error initializing socket: $e');
+    }
   }
 
   @override

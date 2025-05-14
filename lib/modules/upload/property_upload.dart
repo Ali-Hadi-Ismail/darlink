@@ -34,12 +34,14 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   final TextEditingController bedroomsController = TextEditingController();
   final TextEditingController bathroomsController = TextEditingController();
   final TextEditingController kitchensController = TextEditingController();
-
+  final TextEditingController TypeOfTransactionController =
+      TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
   // Property details
   String? selectedPropertyType;
+  String? selectedTypeOfTransaction;
   final List<String> propertyTypes = [
     'Land',
     'Chalet',
@@ -47,6 +49,11 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
     'House',
     'Villa',
     'Commercial'
+  ];
+
+  final List<String> typeOfTransaction = [
+    'Rent',
+    'Sell',
   ];
 
   // Amenities
@@ -280,6 +287,13 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                           ? "Title is required"
                           : null,
                       prefixIcon: Icons.title_outlined,
+                    ),
+                    const SizedBox(height: 20),
+                    buildDropdownFieldTypeTrasaction(
+                      validator: (value) => value == null
+                          ? "Type of transaction  is required"
+                          : null,
+                      prefixIcon: Icons.compare_arrows_outlined,
                     ),
                     const SizedBox(height: 20),
                     buildTextField(
@@ -584,6 +598,67 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
             ? Colors.grey[800]!.withOpacity(0.6)
             : Colors.grey[50]!.withOpacity(0.9),
       ),
+    );
+  }
+
+  Widget buildDropdownFieldTypeTrasaction({
+    String? Function(String?)? validator,
+    IconData? prefixIcon,
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: "Type of Transaction",
+        labelStyle: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: Colors.black,
+          fontSize: 15,
+        ),
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: colorScheme.primary)
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            width: 1.5,
+            color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(width: 2, color: colorScheme.primary),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(width: 1.5, color: colorScheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(width: 2, color: colorScheme.error),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+        filled: true,
+        fillColor: isDarkMode
+            ? Colors.grey[800]!.withOpacity(0.6)
+            : Colors.grey[50]!.withOpacity(0.9),
+      ),
+      style: TextStyle(
+          fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+      validator: validator,
+      value: selectedTypeOfTransaction,
+      items: typeOfTransaction.map((type) {
+        return DropdownMenuItem(value: type, child: Text(type));
+      }).toList(),
+      onChanged: (val) => setState(() => selectedPropertyType = val),
+      icon: Icon(Icons.keyboard_arrow_down, color: colorScheme.primary),
+      isExpanded: true,
+      dropdownColor: isDarkMode ? Colors.grey[800] : Colors.white,
     );
   }
 

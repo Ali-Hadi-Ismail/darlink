@@ -12,6 +12,9 @@ import 'package:darlink/modules/intro_screens/splash_screen.dart';
 import 'package:darlink/modules/navigation/event_screen.dart';
 import 'package:darlink/modules/chat_screen.dart';
 import 'package:darlink/modules/navigation/message_screen.dart';
+import 'package:darlink/modules/navigation/upload_screen.dart';
+import 'package:darlink/modules/profile_screen.dart';
+import 'package:darlink/modules/profile_user_screen.dart';
 import 'package:darlink/modules/transaction_screen.dart';
 import 'package:darlink/modules/upload/property_upload.dart';
 import 'package:darlink/shared/cubit/app_cubit.dart';
@@ -21,6 +24,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'models/user_model.dart';
 
 Future<void> main() async {
   Future<bool> isLoggedIn() async {
@@ -45,15 +50,23 @@ class DarLinkApp extends StatelessWidget {
       child: BlocBuilder<AppCubit, AppCubitState>(
         builder: (context, state) {
           return MaterialApp(
-              key: UniqueKey(),
-              title: 'Darlink',
-              debugShowCheckedModeBanner: false,
-              theme: AppThemeData.lightTheme,
-              darkTheme: AppThemeData.darkTheme,
-              themeMode: ThemeMode.light,
-              home: MessageScreen()
-              // home: SplashScreen(isLoggedIn: isLoggedIn),
-              );
+            key: UniqueKey(),
+            title: 'Darlink',
+            debugShowCheckedModeBanner: false,
+            theme: AppThemeData.lightTheme,
+            darkTheme: AppThemeData.darkTheme,
+            themeMode: ThemeMode.light,
+            home: ProfileUserScreen(
+                user: User(
+              email: "ali@gmail.com",
+              id: "asdf",
+              role: "user",
+              joinDate: "2023-10-01",
+              username: "asdf",
+              avatarUrl: "https://example.com/avatar.jpg",
+            )),
+            // home: SplashScreen(isLoggedIn: isLoggedIn),
+          );
         },
       ),
     );
