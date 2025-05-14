@@ -1,4 +1,6 @@
+import 'package:darlink/models/user_model.dart';
 import 'package:darlink/modules/authentication/login_screen.dart';
+import 'package:darlink/modules/profile_user_screen.dart';
 import 'package:darlink/modules/setting/contact_us_screen.dart';
 import 'package:darlink/modules/setting/notification_screen.dart';
 import 'package:darlink/modules/setting/theme.dart';
@@ -193,6 +195,22 @@ class SettingScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ThemeScreen(),
+                ),
+              );
+              break;
+            case "Personal Profile":
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileUserScreen(
+                      user: User(
+                    email: "ali@gmail.com",
+                    id: "asdf",
+                    role: "user",
+                    joinDate: "2023-10-01",
+                    username: "asdf",
+                    avatarUrl: "https://example.com/avatar.jpg",
+                  )),
                 ),
               );
               break;

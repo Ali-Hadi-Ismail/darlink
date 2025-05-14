@@ -56,7 +56,7 @@ class DarLinkApp extends StatelessWidget {
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: ThemeMode.light,
-            home: ProfileUserScreen(
+            /*     home: ProfileUserScreen(
                 user: User(
               email: "ali@gmail.com",
               id: "asdf",
@@ -64,8 +64,9 @@ class DarLinkApp extends StatelessWidget {
               joinDate: "2023-10-01",
               username: "asdf",
               avatarUrl: "https://example.com/avatar.jpg",
-            )),
+            )), */
             // home: SplashScreen(isLoggedIn: isLoggedIn),
+            home: HomeLayout(),
           );
         },
       ),
