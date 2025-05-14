@@ -45,15 +45,15 @@ class DarLinkApp extends StatelessWidget {
       child: BlocBuilder<AppCubit, AppCubitState>(
         builder: (context, state) {
           return MaterialApp(
-            key: UniqueKey(),
-            title: 'Darlink',
-            debugShowCheckedModeBanner: false,
-            theme: AppThemeData.lightTheme,
-            darkTheme: AppThemeData.darkTheme,
-            themeMode: ThemeMode.light,
-            //home: MessageScreen()
-            home: SplashScreen(isLoggedIn: isLoggedIn),
-          );
+              key: UniqueKey(),
+              title: 'Darlink',
+              debugShowCheckedModeBanner: false,
+              theme: AppThemeData.lightTheme,
+              darkTheme: AppThemeData.darkTheme,
+              themeMode: ThemeMode.light,
+              home: MessageScreen()
+              // home: SplashScreen(isLoggedIn: isLoggedIn),
+              );
         },
       ),
     );
