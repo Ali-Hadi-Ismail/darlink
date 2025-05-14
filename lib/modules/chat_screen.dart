@@ -1,8 +1,11 @@
 import 'package:darlink/models/contact.dart';
 import 'package:darlink/models/message.dart';
+import 'package:darlink/shared/widgets/card/message/own_message_card.dart';
+import 'package:darlink/shared/widgets/card/message/reply_message_card.dart';
 import 'package:darlink/shared/widgets/chat_widget/attachment_option.dart';
 import 'package:darlink/shared/widgets/chat_widget/message_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'dart:async';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -15,9 +18,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+  bool show = false;
+  FocusNode focusNode = FocusNode();
+
   final TextEditingController _controller = TextEditingController();
 
   bool _showAttachmentOptions = false;
+
+  late IO.Socket socket;
   Contact contact = Contact(
     name: 'Ervin Crouse',
     avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -35,6 +43,51 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   @override
+  void initState() {
+    super.initState();
+    connect();
+    focusNode.addListener(() {
+      super.initState();
+      if (focusNode.hasFocus) {
+        setState(() {
+          _showAttachmentOptions = false;
+        });
+      }
+    });
+  }
+
+  void connect() {
+    socket = IO.io(
+      "http://192.168.1.104:5000", // Replace X with your actual local IP
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .enableAutoConnect()
+          .enableForceNew()
+          .setTimeout(5000)
+          .build(),
+    );
+
+    socket.connect();
+
+    socket.onConnect((data) {
+      print('Connected to socket server');
+      socket.emit("test", "Hello from Flutter");
+    });
+    print(socket.connected);
+    socket.onConnectError((error) {
+      print('Connection error: $error');
+    });
+
+    socket.onDisconnect((_) {
+      print('Disconnected from socket server');
+    });
+
+    socket.on("test", (data) {
+      print('Received test message: $data');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -43,8 +96,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       child: Stack(
         children: [
           Image.asset(
-            'assets/images/message_background.png',
-            fit: BoxFit.cover,
+            'assets/images/message_background.jpg',
+            fit: BoxFit.fill,
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
           ),
@@ -56,7 +109,37 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               width: MediaQuery.of(context).size.width,
               child: Stack(
                 children: [
-                  ListView(),
+                  Container(
+                    height: MediaQuery.of(context).size.height - 160,
+                    child: ListView(
+                      reverse: true,
+                      shrinkWrap: true,
+                      children: [
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                        OwnMessageCard(),
+                        ReplyMessageCard(),
+                      ],
+                    ),
+                  ),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: _buildBottomTyping(context, theme),

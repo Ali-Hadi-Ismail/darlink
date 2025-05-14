@@ -3,6 +3,7 @@ import 'package:darlink/modules/authentication/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import '../../constants/Database_url.dart' as mg;
 import '../../constants/database_url.dart';
 import '../../constants/colors/app_color.dart';
 
@@ -94,33 +95,20 @@ class _ForgotPasswordWithEmailState extends State<ForgotPasswordWithEmail> {
   }
 
   // Update password in database
-  Future<bool> _updatePassword() async {
-    try {
-      // Connect to the database
-      var db = await mongo.Db.create(mongo_url);
-      await db.open();
-      var collection = db.collection('user');
-
-      // Update password where email and username match
-      final result = await collection.updateOne(
-        mongo.where.eq('Email', widget.email).eq('name', widget.username),
-        mongo.modify.set('password', _newPasswordController.text),
-      );
-
-      await db.close();
-      return result.isSuccess;
-    } catch (e) {
-      setState(() {
-        _generalError = 'Failed to update password. Please try again later.';
-      });
-      return false;
-    }
-  }
 
   // Handle form submission
-  Future<void> _changePassword() async {
+  Future<void> _changePassword(String email) async {
     if (_formKey.currentState!.validate()) {
       // Clear any previous general errors
+      var db = await mongo.Db.create(mg.mongo_url);
+      await db.open();
+      var collection = db.collection("user");
+
+      await collection.update(
+        mongo.where.eq('Email', email),
+        mongo.modify.set('Password', _confirmPasswordController.text),
+      );
+
       setState(() {
         _generalError = null;
         _isLoading = true;
@@ -138,32 +126,17 @@ class _ForgotPasswordWithEmailState extends State<ForgotPasswordWithEmail> {
       }
 
       // Update password
-      final isUpdated = await _updatePassword();
 
-      setState(() {
-        _isLoading = false;
-        _passwordChanged = isUpdated;
-      });
-
-      if (isUpdated) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password changed successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Navigate back to login after short delay
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-            );
-          }
-        });
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password changed successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
 
@@ -306,13 +279,22 @@ class _ForgotPasswordWithEmailState extends State<ForgotPasswordWithEmail> {
                   onPressed: (_isLoading || _passwordChanged)
                       ? null
                       : () {
+                          print(
+                              'Attempting password change for email: ${widget.email}');
                           if (_currentPasswordError == null &&
                               _newPasswordError == null &&
                               _confirmPasswordError == null &&
-                              _currentPasswordController.text.isNotEmpty &&
                               _newPasswordController.text.isNotEmpty &&
                               _confirmPasswordController.text.isNotEmpty) {
-                            _changePassword();
+                            _changePassword(widget.email);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const LoginScreen(), // Replace with your login screen
+                              ),
+                            );
+                            print(widget.email);
                           } else {
                             // Trigger validations
                             setState(() {

@@ -2,7 +2,8 @@ import 'dart:developer';
 
 import 'package:darlink/modules/authentication/forget_password.dart';
 import 'package:darlink/modules/authentication/register_screen.dart';
-import 'package:darlink/modules/authentication/verify_user_change_password.dart';
+import 'package:darlink/modules/authentication/verify_user_change_password.dart'
+    hide AppColors;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 
-class OwnMessageCard extends StatelessWidget {
-  const OwnMessageCard({super.key});
+class ReplyMessageCard extends StatelessWidget {
+  const ReplyMessageCard({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: Alignment.centerLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width - 45,
         ),
         child: Card(
+          color: Theme.of(context).cardColor,
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
           ),
-          color: Theme.of(context).secondaryHeaderColor,
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           child: Stack(
             children: [
@@ -34,20 +34,12 @@ class OwnMessageCard extends StatelessWidget {
               Positioned(
                 bottom: 4,
                 right: 10,
-                child: Row(
-                  children: [
-                    Text(
-                      "20:10 PM",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSecondary,
-                      ),
-                    ),
-                    SizedBox(width: 5),
-                    Icon(Icons.done,
-                        size: 15,
-                        color: Theme.of(context).colorScheme.onSecondary),
-                  ],
+                child: Text(
+                  "20:10 PM",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
                 ),
               )
             ],

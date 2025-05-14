@@ -1,5 +1,6 @@
 import 'package:darlink/constants/app_theme_data.dart';
 import 'package:darlink/constants/database_url.dart';
+import 'package:darlink/layout/home_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1217,6 +1218,12 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
               content: Text('Property successfully uploaded!'),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeLayout(),
             ),
           );
         } else {
